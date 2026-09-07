@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "API Gateway + Lambda：无服务器 REST API",
+    "output": "apigw_lambda_rest.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "客户端",
+      "sublabel": "curl / 前端",
+      "pos": [
+        60,
+        250
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "gw",
+      "type": "cloud",
+      "label": "API Gateway",
+      "sublabel": "Stage v1 · execute-api 域名",
+      "pos": [
+        340,
+        250
+      ],
+      "size": [
+        170,
+        70
+      ],
+      "tag": "/items · /items/{id}"
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "Lambda ho05-fn",
+      "sublabel": "AWS_PROXY 代理集成",
+      "pos": [
+        640,
+        250
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "tag": "items CRUD"
+    },
+    {
+      "id": "ddb",
+      "type": "database",
+      "label": "DynamoDB",
+      "sublabel": "ho05-items",
+      "pos": [
+        920,
+        250
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566",
+      "wraps": [
+        "gw",
+        "fn",
+        "ddb"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "req",
+      "from": "client",
+      "to": "gw",
+      "label": "HTTPS /v1/items/{id}"
+    },
+    {
+      "id": "proxy",
+      "from": "gw",
+      "to": "fn",
+      "label": "HTTP 请求 → event",
+      "variant": "emphasis"
+    },
+    {
+      "id": "data",
+      "from": "fn",
+      "to": "ddb",
+      "label": "GetItem / PutItem"
+    },
+    {
+      "id": "resp",
+      "from": "fn",
+      "to": "gw",
+      "label": "statusCode + headers + body",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "资源树四件套",
+      "items": [
+        "resource：/items、/{id}",
+        "method：GET/POST/DELETE",
+        "integration：AWS_PROXY",
+        "deployment → stage 才可调用"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "代理集成契约",
+      "items": [
+        "入：httpMethod/path/body",
+        "出：statusCode/headers/body",
+        "格式不对 → 网关 502"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机访问",
+      "items": [
+        "<api-id>.execute-api.localhost.localstack.cloud",
+        "localhost.localstack.cloud → 127.0.0.1",
+        "直连 /restapis 路径会撞 S3 路由"
+      ]
+    }
+  ]
+}

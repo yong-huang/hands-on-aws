@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "DynamoDB 进阶：单表 + Streams + 事务 + TTL",
+    "output": "dynamodb_advanced.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "external",
+      "label": "应用",
+      "sublabel": "三种访问模式",
+      "pos": [
+        50,
+        180
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "table",
+      "type": "database",
+      "label": "单表 ho15-app",
+      "sublabel": "PK/SK 模板 + GSI1",
+      "pos": [
+        320,
+        180
+      ],
+      "size": [
+        180,
+        70
+      ],
+      "tag": "USER#u1/ORDER#… · Streams 开启"
+    },
+    {
+      "id": "lam",
+      "type": "backend",
+      "label": "审计 Lambda",
+      "sublabel": "事件源映射",
+      "pos": [
+        640,
+        110
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "audit",
+      "type": "database",
+      "label": "审计表",
+      "sublabel": "INSERT/MODIFY 留痕",
+      "pos": [
+        640,
+        280
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "新旧镜像"
+    },
+    {
+      "id": "txn",
+      "type": "security",
+      "label": "TransactWrite",
+      "sublabel": "全成全败",
+      "pos": [
+        320,
+        390
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "探活通过"
+    },
+    {
+      "id": "ttl",
+      "type": "security",
+      "label": "TTL",
+      "sublabel": "expire_at 字段",
+      "pos": [
+        560,
+        390
+      ],
+      "size": [
+        140,
+        62
+      ],
+      "tag": "后台按需清理"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack DynamoDB",
+      "wraps": [
+        "table",
+        "lam",
+        "audit",
+        "txn",
+        "ttl"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "wr",
+      "from": "app",
+      "to": "table",
+      "label": "Query / 事务写",
+      "variant": "emphasis"
+    },
+    {
+      "id": "st",
+      "from": "table",
+      "to": "lam",
+      "label": "流记录（新旧镜像）"
+    },
+    {
+      "id": "aud",
+      "from": "lam",
+      "to": "audit",
+      "label": "put_item 留痕",
+      "labelDy": 60
+    },
+    {
+      "id": "tx",
+      "from": "app",
+      "to": "txn",
+      "label": "原子写",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "tt",
+      "from": "app",
+      "to": "ttl",
+      "label": "声明过期",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "单表三模式",
+      "items": [
+        "USER#u1/PROFILE 点查资料",
+        "begins_with ORDER# 取用户订单",
+        "GSI1 全局订单按日期"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Streams",
+      "items": [
+        "NEW_AND_OLD_IMAGES",
+        "INSERT/MODIFY 都留痕",
+        "事件源映射自动消费"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "探活纪律",
+      "items": [
+        "事务/TTL 用 12s 短超时先探活",
+        "不可用降级为条件写组合",
+        "本机修复 provider 后实测可用"
+      ]
+    }
+  ]
+}

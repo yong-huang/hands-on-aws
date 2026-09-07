@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "双栈 IaC：模板声明要什么，状态记录有什么",
+    "output": "terraform_cloudformation.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "dev",
+      "type": "external",
+      "label": "工程师",
+      "sublabel": "模板进 git",
+      "pos": [
+        50,
+        240
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "tf",
+      "type": "cloud",
+      "label": "Terraform (tflocal)",
+      "sublabel": "本地状态 terraform.tfstate",
+      "pos": [
+        330,
+        130
+      ],
+      "size": [
+        180,
+        70
+      ],
+      "tag": "plan = 本地 diff"
+    },
+    {
+      "id": "cfn",
+      "type": "cloud",
+      "label": "CloudFormation",
+      "sublabel": "状态在服务端栈",
+      "pos": [
+        330,
+        350
+      ],
+      "size": [
+        180,
+        70
+      ],
+      "tag": "事件流水可查"
+    },
+    {
+      "id": "res",
+      "type": "database",
+      "label": "S3 + SQS + SNS",
+      "sublabel": "LocalStack 真实资源",
+      "pos": [
+        680,
+        240
+      ],
+      "size": [
+        180,
+        66
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566",
+      "wraps": [
+        "res"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "dev-tf",
+      "from": "dev",
+      "to": "tf",
+      "label": "main.tf"
+    },
+    {
+      "id": "dev-cfn",
+      "from": "dev",
+      "to": "cfn",
+      "label": "template.yaml"
+    },
+    {
+      "id": "tf-res",
+      "from": "tf",
+      "to": "res",
+      "label": "apply / destroy",
+      "variant": "emphasis"
+    },
+    {
+      "id": "cfn-res",
+      "from": "cfn",
+      "to": "res",
+      "label": "create / update-stack"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "共同点",
+      "items": [
+        "声明式模板，可重复 apply",
+        "destroy 一键归零",
+        "先预览再执行"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "状态对账",
+      "items": [
+        "Terraform：状态文件自持",
+        "CloudFormation：栈托管在服务端",
+        "漂移 = 真实与模板不一致"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "实测注意",
+      "items": [
+        "DynamoDB provider 与本机 LS 不兼容",
+        "演示选 S3/SQS/SNS",
+        "首次 init 需下载 provider"
+      ]
+    }
+  ]
+}

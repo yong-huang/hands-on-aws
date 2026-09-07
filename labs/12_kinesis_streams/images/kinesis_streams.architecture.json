@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Kinesis Data Streams：可回放的分片日志",
+    "output": "kinesis_streams.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "producers",
+      "type": "external",
+      "label": "生产者",
+      "sublabel": "PutRecords",
+      "pos": [
+        60,
+        200
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "shard",
+      "type": "database",
+      "label": "分片 shard-000",
+      "sublabel": "1MB/s 写 · 2MB/s 读",
+      "pos": [
+        340,
+        200
+      ],
+      "size": [
+        170,
+        70
+      ],
+      "tag": "分区内严格有序 · 保留期可回放"
+    },
+    {
+      "id": "manual",
+      "type": "backend",
+      "label": "手动消费者",
+      "sublabel": "TRIM_HORIZON / AT_TIMESTAMP",
+      "pos": [
+        640,
+        120
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "自管迭代器书签"
+    },
+    {
+      "id": "lambda",
+      "type": "backend",
+      "label": "Lambda sink",
+      "sublabel": "事件源映射 LATEST",
+      "pos": [
+        640,
+        300
+      ],
+      "size": [
+        160,
+        66
+      ],
+      "tag": "托管消费者"
+    },
+    {
+      "id": "ddb",
+      "type": "database",
+      "label": "DynamoDB",
+      "sublabel": "ho12-sink",
+      "pos": [
+        900,
+        300
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack kinesis-mock :4566",
+      "wraps": [
+        "shard",
+        "manual",
+        "lambda",
+        "ddb"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "write",
+      "from": "producers",
+      "to": "shard",
+      "label": "分区键 hash 落分片",
+      "variant": "emphasis"
+    },
+    {
+      "id": "read-manual",
+      "from": "shard",
+      "to": "manual",
+      "label": "从头读 / 定点重放"
+    },
+    {
+      "id": "read-lambda",
+      "from": "shard",
+      "to": "lambda",
+      "label": "平台代管拉取",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "persist",
+      "from": "lambda",
+      "to": "ddb",
+      "label": "put_item 落库"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三种迭代器",
+      "items": [
+        "TRIM_HORIZON：从头回填",
+        "LATEST：只看新记录",
+        "AT_TIMESTAMP：定点重放"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "顺序与吞吐",
+      "items": [
+        "同分区键同分片严格有序",
+        "跨分区键并行",
+        "扩容 = 加分片"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机实测坑",
+      "items": [
+        "代理劫持：NO_PROXY 兜底",
+        "Data 可能明文或缺填充 base64",
+        "删建同名流读脏数据；容器时钟会漂移"
+      ]
+    }
+  ]
+}

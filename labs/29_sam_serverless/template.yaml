@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: ho29 SAM 无服务器应用：函数 + API + 事件源
+Globals:
+  Function:
+    Runtime: python3.12
+    MemorySize: 256
+    Timeout: 20
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref Table
+Resources:
+  Table:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: ho29-tasks
+      PrimaryKey:
+        Name: id
+        Type: String
+  TaskFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ho29-task-fn
+      CodeUri: functions/
+      Handler: task.handler
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /tasks
+            Method: any
+        DailyTick:
+          Type: Schedule
+          Properties:
+            Schedule: rate(1 day)

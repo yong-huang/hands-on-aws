@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "实时日志分析平台：采→洗→存→警→看",
+    "output": "log_analytics_platform.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "gen",
+      "type": "external",
+      "label": "生成器",
+      "sublabel": "1000 条 · run 标记",
+      "pos": [
+        50,
+        190
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "stream",
+      "type": "messagebus",
+      "label": "Kinesis",
+      "sublabel": "ho30-logs · 1 分片",
+      "pos": [
+        340,
+        190
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "削峰缓冲"
+    },
+    {
+      "id": "clean",
+      "type": "backend",
+      "label": "清洗 Lambda",
+      "sublabel": "脱敏 · 结构化",
+      "pos": [
+        630,
+        190
+      ],
+      "size": [
+        160,
+        66
+      ],
+      "tag": "映射 LATEST"
+    },
+    {
+      "id": "ddb",
+      "type": "database",
+      "label": "明细表",
+      "sublabel": "ho30-events",
+      "pos": [
+        900,
+        110
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "按 run 过滤"
+    },
+    {
+      "id": "s3",
+      "type": "database",
+      "label": "S3 归档",
+      "sublabel": "按天/批",
+      "pos": [
+        900,
+        250
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "sqs",
+      "type": "messagebus",
+      "label": "告警队列",
+      "sublabel": "ERROR 落队",
+      "pos": [
+        630,
+        380
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "100 条实测"
+    },
+    {
+      "id": "cw",
+      "type": "cloud",
+      "label": "CloudWatch",
+      "sublabel": "Ho30 指标",
+      "pos": [
+        900,
+        380
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "生成器打点"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "CDK 栈 ho30-platform（bootstrap + deploy/destroy）",
+      "wraps": [
+        "stream",
+        "clean",
+        "ddb",
+        "s3",
+        "sqs",
+        "cw"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "ingest",
+      "from": "gen",
+      "to": "stream",
+      "label": "put_records 批量",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pull",
+      "from": "stream",
+      "to": "clean",
+      "label": "事件源映射拉取"
+    },
+    {
+      "id": "detail",
+      "from": "clean",
+      "to": "ddb",
+      "label": "明细入库",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "arch",
+      "from": "clean",
+      "to": "s3",
+      "label": "按天归档",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "alert",
+      "from": "clean",
+      "to": "sqs",
+      "label": "ERROR 告警",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "mtr",
+      "from": "gen",
+      "to": "cw",
+      "label": "容器时钟打点",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "bottom",
+      "via": [
+        [
+          125,
+          470
+        ],
+        [
+          975,
+          470
+        ]
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "断言矩阵",
+      "items": [
+        "明细 ≥95% 入库",
+        "告警 100 条落队",
+        "归档 10 批生成",
+        "指标 2 条注册"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "工程细节",
+      "items": [
+        "run 标记隔离重跑",
+        "脱敏集中在清洗层",
+        "S3 按天/批幂等命名"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "收官数据",
+      "items": [
+        "1000 条压测全绿",
+        "CDK bootstrap+deploy 47s",
+        "销毁复原零残留"
+      ]
+    }
+  ]
+}

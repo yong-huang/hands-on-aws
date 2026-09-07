@@ -1,0 +1,52 @@
+{
+  "Comment": "ho18：扣库存(重试) → Map 并行发货；失败走补偿",
+  "StartAt": "Reserve",
+  "States": {
+    "Reserve": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:ho18-reserve",
+      "Retry": [
+        { "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 1, "MaxAttempts": 1, "BackoffRate": 1.5 },
+        { "ErrorEquals": ["States.Timeout"], "MaxAttempts": 0 }
+      ],
+      "Catch": [
+        { "ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "Compensate" }
+      ],
+      "ResultPath": "$.reserve",
+      "Next": "ShipAll"
+    },
+    "ShipAll": {
+      "Type": "Map",
+      "ItemsPath": "$.items",
+      "MaxConcurrency": 2,
+      "Iterator": {
+        "StartAt": "ShipOne",
+        "States": {
+          "ShipOne": {
+            "Type": "Task",
+            "Resource": "arn:aws:lambda:us-east-1:000000000000:function:ho18-ship",
+            "End": true
+          }
+        }
+      },
+      "ResultPath": "$.shipped",
+      "Next": "Done"
+    },
+    "Compensate": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:ho18-cancel",
+      "ResultPath": "$.compensation",
+      "Next": "DoneCompensated"
+    },
+    "Done": {
+      "Type": "Pass",
+      "Parameters": { "decision": "fulfilled", "count.$": "States.ArrayLength($.shipped)" },
+      "End": true
+    },
+    "DoneCompensated": {
+      "Type": "Pass",
+      "Parameters": { "decision": "compensated" },
+      "End": true
+    }
+  }
+}

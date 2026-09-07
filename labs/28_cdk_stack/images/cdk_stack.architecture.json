@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CDK：代码画栈，四连交付",
+    "output": "cdk_stack.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "external",
+      "label": "app.py",
+      "sublabel": "Ho28Stack 四资源",
+      "pos": [
+        60,
+        200
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "synth",
+      "type": "backend",
+      "label": "cdklocal synth",
+      "sublabel": "构造树 → 模板",
+      "pos": [
+        360,
+        200
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "cfn",
+      "type": "cloud",
+      "label": "LocalStack CFN",
+      "sublabel": "deploy/destroy",
+      "pos": [
+        660,
+        200
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "res",
+      "type": "database",
+      "label": "S3+SQS+Lambda+DDB",
+      "sublabel": "ho28-*",
+      "pos": [
+        660,
+        400
+      ],
+      "size": [
+        200,
+        62
+      ],
+      "tag": "diff 为空 = 对齐"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（bootstrap 后支持资产）",
+      "wraps": [
+        "cfn",
+        "res"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "s",
+      "from": "app",
+      "to": "synth",
+      "label": "python3 app.py",
+      "variant": "emphasis"
+    },
+    {
+      "id": "d",
+      "from": "synth",
+      "to": "cfn",
+      "label": "deploy"
+    },
+    {
+      "id": "r",
+      "from": "cfn",
+      "to": "res",
+      "label": "创建/销毁",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "四连",
+      "items": [
+        "synth 生成模板",
+        "diff 对账",
+        "deploy 上线",
+        "destroy 清栈"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "栈 CREATE_COMPLETE",
+        "四资源验证通过",
+        "部署后 diff 为空"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "依赖",
+      "items": [
+        "npm: aws-cdk-local aws-cdk",
+        "pip: aws-cdk-lib constructs",
+        "资产需 cdk bootstrap"
+      ]
+    }
+  ]
+}

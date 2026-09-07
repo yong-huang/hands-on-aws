@@ -1,0 +1,20 @@
+# ho09 · CloudFormation 模板：与 Terraform 同构的 S3 + SQS + SNS
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ho09 IaC demo stack
+Resources:
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ho09-cfn-data
+      Tags:
+        - Key: Managed
+          Value: cloudformation
+  JobsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ho09-cfn-jobs
+      DelaySeconds: 0  # 更新演示：改为 5
+  EventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ho09-cfn-events

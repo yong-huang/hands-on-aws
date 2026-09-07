@@ -1,0 +1,36 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "ho06 订单状态机：校验 → 收款（重试） → 并行扇出",
+    "output": "stepfunctions_state_machine.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "lanes": [
+    { "id": "flow", "label": "主流程" },
+    { "id": "branch", "label": "异常分支", "variant": "exception" }
+  ],
+  "mainPath": ["start", "validate", "charge", "fanout", "done"],
+  "nodes": [
+    { "id": "start", "lane": "flow", "col": 0, "type": "external", "label": "执行输入", "sublabel": "StartAt", "width": 120 },
+    { "id": "validate", "lane": "flow", "col": 1, "type": "backend", "label": "Validate", "sublabel": "Lambda 校验", "width": 120 },
+    { "id": "charge", "lane": "flow", "col": 2, "type": "backend", "label": "Charge", "sublabel": "Lambda 收款", "tag": "Retry×2 退避", "width": 132 },
+    { "id": "fanout", "lane": "flow", "col": 3, "type": "messagebus", "label": "Parallel", "sublabel": "通知 ‖ 审计", "width": 120 },
+    { "id": "done", "lane": "flow", "col": 4, "type": "backend", "label": "Done", "sublabel": "fulfilled", "width": 120 },
+    { "id": "rejected", "lane": "branch", "col": 2, "type": "security", "label": "Rejected", "sublabel": "校验不过", "width": 120 },
+    { "id": "compensate", "lane": "branch", "col": 3, "type": "security", "label": "Compensate", "sublabel": "Catch 兜底", "tag": "执行仍 SUCCESS", "width": 132 }
+  ],
+  "edges": [
+    { "id": "start-validate", "from": "start", "to": "validate", "variant": "default" },
+    { "id": "validate-charge", "from": "validate", "to": "charge", "label": "valid=true", "variant": "emphasis" },
+    { "id": "charge-fanout", "from": "charge", "to": "fanout", "label": "扣款成功" },
+    { "id": "fanout-done", "from": "fanout", "to": "done", "variant": "emphasis" },
+    { "id": "validate-rejected", "from": "validate", "to": "rejected", "label": "invalid", "variant": "dashed", "role": "error" },
+    { "id": "charge-compensate", "from": "charge", "to": "compensate", "label": "重试耗尽", "variant": "dashed", "role": "error" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "控制流声明化", "items": ["ASL 一个 JSON 描述全部分支", "Lambda 只写业务动作", "执行历史 = 每步输入输出回放"] },
+    { "dot": "rose", "title": "失败是数据", "items": ["Retry: 1s 起、退避×2、最多 2 次", "重试耗尽走 Catch 进补偿", "补偿后 execution 仍 SUCCEEDED"] }
+  ]
+}

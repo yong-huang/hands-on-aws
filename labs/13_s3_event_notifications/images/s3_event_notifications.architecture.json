@@ -1,0 +1,198 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "S3 事件通知全景：一次上传四路并发",
+    "output": "s3_event_notifications.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "up",
+      "type": "external",
+      "label": "上传者",
+      "sublabel": "put-object",
+      "pos": [
+        40,
+        190
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "bucket",
+      "type": "cloud",
+      "label": "S3 桶 ho13-src",
+      "sublabel": "NotificationConfiguration",
+      "pos": [
+        260,
+        190
+      ],
+      "size": [
+        170,
+        70
+      ],
+      "tag": "事件路由表"
+    },
+    {
+      "id": "sqs",
+      "type": "messagebus",
+      "label": "SQS .csv 队列",
+      "sublabel": "suffix .csv",
+      "pos": [
+        560,
+        90
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "sns",
+      "type": "messagebus",
+      "label": "SNS 订阅队列",
+      "sublabel": "无过滤全量",
+      "pos": [
+        560,
+        200
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "CSV 解析 Lambda",
+      "sublabel": "prefix data/",
+      "pos": [
+        560,
+        310
+      ],
+      "size": [
+        150,
+        66
+      ]
+    },
+    {
+      "id": "ddb",
+      "type": "database",
+      "label": "DynamoDB",
+      "sublabel": "ho13-items",
+      "pos": [
+        830,
+        310
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "eb",
+      "type": "cloud",
+      "label": "EventBridge",
+      "sublabel": "总线开关已开",
+      "pos": [
+        260,
+        400
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "转发未生效（如实记录）"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566",
+      "wraps": [
+        "bucket",
+        "sqs",
+        "sns",
+        "fn",
+        "ddb",
+        "eb"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "up-bucket",
+      "from": "up",
+      "to": "bucket",
+      "label": "上传 data/a.csv",
+      "variant": "emphasis"
+    },
+    {
+      "id": "b-sqs",
+      "from": "bucket",
+      "to": "sqs",
+      "label": ".csv 才投",
+      "labelDy": -50
+    },
+    {
+      "id": "b-sns",
+      "from": "bucket",
+      "to": "sns"
+    },
+    {
+      "id": "b-fn",
+      "from": "bucket",
+      "to": "fn",
+      "label": "data/ 才触发",
+      "labelDy": 110
+    },
+    {
+      "id": "fn-ddb",
+      "from": "fn",
+      "to": "ddb",
+      "label": "逐行入库"
+    },
+    {
+      "id": "b-eb",
+      "from": "bucket",
+      "to": "eb",
+      "label": "事件进总线",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "过滤路由",
+      "items": [
+        "suffix/prefix 每路独立配置",
+        "a.csv 命中三路，b.txt 只有 SNS",
+        "配置是替换式更新，先 get 再合并"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "CSV 管道",
+      "items": [
+        "事件只传指针 bucket+key",
+        "函数自己拉数据解析",
+        "同 key 覆盖天然幂等"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "实测差异",
+      "items": [
+        "put-object 可能双发（Put+Post）",
+        "EventBridge 转发本构建未生效",
+        "真实 AWS 每次上传仅一条事件"
+      ]
+    }
+  ]
+}

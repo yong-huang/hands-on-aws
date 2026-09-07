@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SSM 配置中心：分层 · 加密 · 版本 Label",
+    "output": "ssm_parameter_store.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "dev",
+      "type": "database",
+      "label": "/ho20/dev/*",
+      "sublabel": "db-url · db-password",
+      "pos": [
+        320,
+        110
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "prod",
+      "type": "database",
+      "label": "/ho20/prod/*",
+      "sublabel": "SecureString",
+      "pos": [
+        320,
+        230
+      ],
+      "size": [
+        170,
+        62
+      ],
+      "tag": "WithDecryption 读取"
+    },
+    {
+      "id": "ver",
+      "type": "database",
+      "label": "/app/version",
+      "sublabel": "v1 · v2 + beta 标签",
+      "pos": [
+        320,
+        350
+      ],
+      "size": [
+        170,
+        62
+      ],
+      "tag": "历史可回滚"
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "应用 / Lambda",
+      "sublabel": "按 env 路径一次拉全",
+      "pos": [
+        650,
+        230
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "WithDecryption"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack SSM :4566（SecureString 未做 KMS 加密，如实记录）",
+      "wraps": [
+        "dev",
+        "prod",
+        "ver",
+        "fn"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "r1",
+      "from": "fn",
+      "to": "dev",
+      "variant": "dashed"
+    },
+    {
+      "id": "r2",
+      "from": "fn",
+      "to": "prod",
+      "variant": "emphasis"
+    },
+    {
+      "id": "r3",
+      "from": "fn",
+      "to": "ver",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "分层路径",
+      "items": [
+        "/app/env/key 命名规范",
+        "ByPath 一次拉全",
+        "IAM 可按路径授权"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "版本与发布",
+      "items": [
+        "覆盖写入版本 +1",
+        "beta 标签灰度读取",
+        "get-parameter-history 回滚"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "选型",
+      "items": [
+        "一般配置 → SSM（免费）",
+        "高敏感凭据 → Secrets Manager",
+        "本机 SecureString 未加密（实测）"
+      ]
+    }
+  ]
+}

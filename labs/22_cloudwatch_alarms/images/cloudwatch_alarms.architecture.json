@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "告警闭环：指标 → Alarm → SNS → SQS",
+    "output": "cloudwatch_alarms.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "external",
+      "label": "应用",
+      "sublabel": "按维度打点",
+      "pos": [
+        50,
+        180
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "metric",
+      "type": "database",
+      "label": "Errors 指标",
+      "sublabel": "维度 Service=api/worker",
+      "pos": [
+        330,
+        180
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "容器时钟打点"
+    },
+    {
+      "id": "alarm",
+      "type": "security",
+      "label": "Alarm",
+      "sublabel": "Sum≥3 → ALARM",
+      "pos": [
+        630,
+        180
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "三态流转"
+    },
+    {
+      "id": "sns",
+      "type": "messagebus",
+      "label": "SNS 主题",
+      "sublabel": "alarm-actions",
+      "pos": [
+        890,
+        180
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "sqs",
+      "type": "messagebus",
+      "label": "值班 SQS",
+      "sublabel": "告警消息落地",
+      "pos": [
+        890,
+        350
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack CloudWatch + SNS + SQS",
+      "wraps": [
+        "metric",
+        "alarm",
+        "sns",
+        "sqs"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "put",
+      "from": "app",
+      "to": "metric",
+      "label": "put-metric-data",
+      "variant": "emphasis"
+    },
+    {
+      "id": "eval",
+      "from": "metric",
+      "to": "alarm",
+      "label": "周期评估"
+    },
+    {
+      "id": "act",
+      "from": "alarm",
+      "to": "sns",
+      "label": "进 ALARM 触发"
+    },
+    {
+      "id": "notify",
+      "from": "sns",
+      "to": "sqs",
+      "label": "订阅投递",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 60
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三态",
+      "items": [
+        "INSUFFICIENT_DATA 初始",
+        "越限 ALARM",
+        "回落 OK"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "维度",
+      "items": [
+        "Service 拆 api/worker",
+        "告警只盯一个维度",
+        "键值必须完全一致"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "时钟陷阱",
+      "items": [
+        "容器落后宿主 3h",
+        "宿主时间打点永不触发",
+        "从响应头取容器时钟"
+      ]
+    }
+  ]
+}

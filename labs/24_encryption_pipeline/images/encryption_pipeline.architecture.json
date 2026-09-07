@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "加密管道：SSE-KMS · Grant · 信封加密",
+    "output": "encryption_pipeline.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "external",
+      "label": "应用",
+      "sublabel": "上传 / 归档",
+      "pos": [
+        50,
+        190
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "cloud",
+      "label": "S3 桶",
+      "sublabel": "SSE-KMS 落桶",
+      "pos": [
+        330,
+        190
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "元数据可见 CMK"
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "KMS CMK",
+      "sublabel": "Encrypt ≤4KB",
+      "pos": [
+        330,
+        390
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "只加密钥"
+    },
+    {
+      "id": "grant",
+      "type": "security",
+      "label": "Grant",
+      "sublabel": "Decrypt-only",
+      "pos": [
+        640,
+        390
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "可撤销"
+    },
+    {
+      "id": "env",
+      "type": "backend",
+      "label": "信封加密",
+      "sublabel": "本地 AES 任意大小",
+      "pos": [
+        640,
+        190
+      ],
+      "size": [
+        160,
+        66
+      ],
+      "tag": "5MB 往返一致"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack KMS + S3",
+      "wraps": [
+        "s3",
+        "kms",
+        "grant",
+        "env"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "up",
+      "from": "app",
+      "to": "s3",
+      "label": "指定 CMK 上传",
+      "variant": "emphasis"
+    },
+    {
+      "id": "s3k",
+      "from": "s3",
+      "to": "kms",
+      "label": "透明解密",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 60
+    },
+    {
+      "id": "envk",
+      "from": "env",
+      "to": "kms",
+      "label": "数据密钥",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 60
+    },
+    {
+      "id": "g",
+      "from": "grant",
+      "to": "kms",
+      "label": "最小授权",
+      "variant": "dashed",
+      "fromSide": "left",
+      "toSide": "right"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "4KB 上限实测",
+      "items": [
+        "KMS Encrypt 拒绝 >4KB",
+        "信封加密存在的理由",
+        "调用量与数据量解耦"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "三层管道",
+      "items": [
+        "存储层 SSE-KMS",
+        "授权层 Grant",
+        "应用层信封加密"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "参数名坑",
+      "items": [
+        "CLI 是 --ssekms-key-id",
+        "Grant 按操作粒度",
+        "可 Retire/Revoke 撤销"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "S3 静态站 + 无服务器后端：留言板全栈",
+    "output": "s3_website_fullstack.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "浏览器",
+      "sublabel": "静态页 + fetch",
+      "pos": [
+        50,
+        330
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "site",
+      "type": "cloud",
+      "label": "S3 website",
+      "sublabel": "index.html（注入 API 地址）",
+      "pos": [
+        310,
+        130
+      ],
+      "size": [
+        180,
+        66
+      ]
+    },
+    {
+      "id": "gw",
+      "type": "cloud",
+      "label": "API Gateway",
+      "sublabel": "/messages GET·POST",
+      "pos": [
+        640,
+        130
+      ],
+      "size": [
+        160,
+        66
+      ]
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "留言板 Lambda",
+      "sublabel": "CORS 头注入",
+      "pos": [
+        900,
+        130
+      ],
+      "size": [
+        150,
+        66
+      ]
+    },
+    {
+      "id": "ddb",
+      "type": "database",
+      "label": "DynamoDB",
+      "sublabel": "ho19-board",
+      "pos": [
+        900,
+        330
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "put",
+      "type": "cloud",
+      "label": "预签名直传",
+      "sublabel": "PUT 预签名 URL",
+      "pos": [
+        310,
+        330
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "不经过后端"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566",
+      "wraps": [
+        "site",
+        "gw",
+        "fn",
+        "ddb",
+        "put"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "page",
+      "from": "browser",
+      "to": "site",
+      "label": "GET 页面",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "fetch",
+      "from": "browser",
+      "to": "gw",
+      "label": "fetch 留言",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "api",
+      "from": "gw",
+      "to": "fn",
+      "label": "代理集成"
+    },
+    {
+      "id": "save",
+      "from": "fn",
+      "to": "ddb",
+      "label": "入库",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 40
+    },
+    {
+      "id": "direct",
+      "from": "browser",
+      "to": "put",
+      "label": "PUT 直传",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDy": 30
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "联调三件套",
+      "items": [
+        "静态页注入 API 地址",
+        "CORS 头放行跨域 fetch",
+        "POST/GET 闭环落库回显"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "直传",
+      "items": [
+        "后端签 URL 不搬数据",
+        "PUT 到期失效",
+        "落桶后可接事件管道（lab 13）"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机实测",
+      "items": [
+        "website 配置最终一致",
+        "根路径不做 index 重定向",
+        "/index.html 访问正常"
+      ]
+    }
+  ]
+}

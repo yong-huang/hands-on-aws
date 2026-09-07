@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CFN 深化：变更集 · 嵌套栈 · 自定义资源",
+    "output": "cloudformation_advanced.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "eng",
+      "type": "external",
+      "label": "工程师",
+      "sublabel": "create-change-set",
+      "pos": [
+        50,
+        200
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "parent",
+      "type": "cloud",
+      "label": "主栈 ho26-parent",
+      "sublabel": "变更集预览 → 执行",
+      "pos": [
+        330,
+        200
+      ],
+      "size": [
+        170,
+        70
+      ],
+      "tag": "嵌套+Export+Retain"
+    },
+    {
+      "id": "child",
+      "type": "cloud",
+      "label": "嵌套子栈",
+      "sublabel": "TemplateURL → S3",
+      "pos": [
+        660,
+        110
+      ],
+      "size": [
+        160,
+        62
+      ]
+    },
+    {
+      "id": "res",
+      "type": "database",
+      "label": "主题 + 保护桶",
+      "sublabel": "Retain 桶幸存删栈",
+      "pos": [
+        660,
+        220
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "cr",
+      "type": "backend",
+      "label": "自定义资源 Lambda",
+      "sublabel": "动态建删表",
+      "pos": [
+        660,
+        340
+      ],
+      "size": [
+        170,
+        62
+      ],
+      "tag": "合成事件驱动（本机）"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack CFN（CR 自动调用未实现，如实记录）",
+      "wraps": [
+        "parent",
+        "child",
+        "res",
+        "cr"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "cs",
+      "from": "eng",
+      "to": "parent",
+      "label": "预览 diff → execute",
+      "variant": "emphasis"
+    },
+    {
+      "id": "nest",
+      "from": "parent",
+      "to": "child",
+      "label": "嵌套引用"
+    },
+    {
+      "id": "own",
+      "from": "parent",
+      "to": "res"
+    },
+    {
+      "id": "invoke",
+      "from": "parent",
+      "to": "cr",
+      "label": "Create/Delete 事件",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "变更集",
+      "items": [
+        "Changes 逐资源预览",
+        "delete 即弃、execute 才生效",
+        "断言 NumberOfChanges ≥1"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "组件化",
+      "items": [
+        "子栈模板放 S3",
+        "Export/Import 传值",
+        "Retain 保护关键资源"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机边界",
+      "items": [
+        "CR 不自动触发",
+        "合成事件同构驱动",
+        "重命名变更可能不落地"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "EventBridge 事件总线：规则决定谁收到",
+    "output": "eventbridge_bus.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "pub",
+      "type": "external",
+      "label": "发布者",
+      "sublabel": "PutEvents",
+      "pos": [
+        50,
+        190
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "bus",
+      "type": "messagebus",
+      "label": "自定义总线",
+      "sublabel": "ho11-bus",
+      "pos": [
+        310,
+        190
+      ],
+      "size": [
+        160,
+        66
+      ],
+      "tag": "source/detail-type/detail"
+    },
+    {
+      "id": "r1",
+      "type": "security",
+      "label": "规则①精确+数值",
+      "sublabel": "amount > 100",
+      "pos": [
+        620,
+        80
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "r2",
+      "type": "security",
+      "label": "规则②前缀",
+      "sublabel": "source: app.*",
+      "pos": [
+        620,
+        190
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "r3",
+      "type": "security",
+      "label": "规则③定时",
+      "sublabel": "rate(1 minute)",
+      "pos": [
+        620,
+        330
+      ],
+      "size": [
+        170,
+        62
+      ],
+      "tag": "default 总线（实测）"
+    },
+    {
+      "id": "q",
+      "type": "messagebus",
+      "label": "SQS + Lambda",
+      "sublabel": "双目标",
+      "pos": [
+        920,
+        80
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "一事件两处投递"
+    },
+    {
+      "id": "qapp",
+      "type": "messagebus",
+      "label": "全量队列",
+      "sublabel": "收 app.* 全部",
+      "pos": [
+        920,
+        190
+      ],
+      "size": [
+        160,
+        62
+      ]
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "定时 Lambda",
+      "sublabel": "cron.tick 日志",
+      "pos": [
+        920,
+        330
+      ],
+      "size": [
+        160,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack Events（Schedule 仅 default 总线，实测）",
+      "wraps": [
+        "bus",
+        "r1",
+        "r2",
+        "q",
+        "qapp"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "put",
+      "from": "pub",
+      "to": "bus",
+      "label": "PutEvents",
+      "variant": "emphasis",
+      "fromSide": "right",
+      "toSide": "left",
+      "labelDy": -40
+    },
+    {
+      "id": "m1",
+      "from": "bus",
+      "to": "r1",
+      "label": "精确+数值"
+    },
+    {
+      "id": "m2",
+      "from": "bus",
+      "to": "r2",
+      "variant": "dashed"
+    },
+    {
+      "id": "m3",
+      "from": "bus",
+      "to": "r3",
+      "variant": "dashed"
+    },
+    {
+      "id": "t1",
+      "from": "r1",
+      "to": "q",
+      "label": "SQS+Lambda 双目标"
+    },
+    {
+      "id": "t2",
+      "from": "r2",
+      "to": "qapp",
+      "label": "全量转发"
+    },
+    {
+      "id": "t3",
+      "from": "r3",
+      "to": "fn",
+      "label": "触发"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三种匹配",
+      "items": [
+        "精确：source/detail-type",
+        "前缀：app.*",
+        "数值：amount > 100 实测过滤"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "多目标",
+      "items": [
+        "一条规则挂 SQS+Lambda",
+        "目标各自独立重试",
+        "队列目标要授权"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "实测差异",
+      "items": [
+        "Schedule 规则只能建在 default 总线",
+        "不匹配事件静默消失",
+        "cron 触发实测通过"
+      ]
+    }
+  ]
+}

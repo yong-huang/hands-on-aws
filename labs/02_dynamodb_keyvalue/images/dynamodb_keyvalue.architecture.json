@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "DynamoDB 访问模式：主键 · GSI · Scan 的代价",
+    "output": "dynamodb_keyvalue.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "应用 / 脚本",
+      "sublabel": "aws CLI / boto3",
+      "pos": [
+        60,
+        250
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "main",
+      "type": "database",
+      "label": "主表 ho02-orders",
+      "sublabel": "PK customer_id · SK order_id",
+      "pos": [
+        350,
+        250
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "Query 只读一个分区"
+    },
+    {
+      "id": "gsi",
+      "type": "database",
+      "label": "GSI channel-amount",
+      "sublabel": "HASH channel · RANGE amount",
+      "pos": [
+        760,
+        430
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "最终一致的投影"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack DynamoDB",
+      "wraps": [
+        "main",
+        "gsi"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "q-main",
+      "from": "client",
+      "to": "main",
+      "label": "Query 按主键点查",
+      "variant": "emphasis"
+    },
+    {
+      "id": "scan-main",
+      "from": "client",
+      "to": "main",
+      "label": "Scan 全表读后滤",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "q-gsi",
+      "from": "client",
+      "to": "gsi",
+      "label": "GSI 换维度查询"
+    },
+    {
+      "id": "proj",
+      "from": "main",
+      "to": "gsi",
+      "label": "写入自动投影",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 70
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "主键建模",
+      "items": [
+        "分区键决定数据放哪个分区",
+        "排序键分区内有序、可 BETWEEN",
+        "主键组合全局唯一"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "条件写入",
+      "items": [
+        "attribute_not_exists 防覆盖",
+        "失败抛 ConditionalCheckFailed",
+        "原数据毫发无损"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Query vs Scan",
+      "items": [
+        "Query：成本 ∝ 结果数",
+        "Scan：读容量按扫描量计",
+        "过滤条件应建模进键或索引"
+      ]
+    }
+  ]
+}

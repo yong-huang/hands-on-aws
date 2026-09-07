@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "S3 对象存储：版本链 · 生命周期 · 预签名",
+    "output": "s3_object_storage.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "dev",
+      "type": "external",
+      "label": "开发者",
+      "sublabel": "aws CLI / boto3",
+      "pos": [
+        60,
+        120
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "curl",
+      "type": "external",
+      "label": "curl",
+      "sublabel": "无凭证下载",
+      "pos": [
+        60,
+        380
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "s3api",
+      "type": "cloud",
+      "label": "S3 API",
+      "sublabel": "localhost:4566",
+      "pos": [
+        330,
+        250
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "bucket",
+      "type": "database",
+      "label": "ho01-demo",
+      "sublabel": "Versioning: Enabled",
+      "pos": [
+        600,
+        250
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "v1 · v2 · delete marker"
+    },
+    {
+      "id": "lifecycle",
+      "type": "cloud",
+      "label": "Lifecycle Rules",
+      "sublabel": "只存配置，不执行过期",
+      "pos": [
+        880,
+        250
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "raw/ 30 天"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack 容器 :4566",
+      "wraps": [
+        "s3api",
+        "bucket",
+        "lifecycle"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "dev-to-s3",
+      "from": "dev",
+      "to": "s3api",
+      "label": "PutObject / GetObject",
+      "variant": "emphasis"
+    },
+    {
+      "id": "dev-to-curl",
+      "from": "dev",
+      "to": "curl",
+      "label": "签发预签名 URL",
+      "variant": "dashed",
+      "labelDy": 90
+    },
+    {
+      "id": "curl-to-s3",
+      "from": "curl",
+      "to": "s3api",
+      "label": "GET 预签名 URL",
+      "variant": "dashed"
+    },
+    {
+      "id": "s3-to-bucket",
+      "from": "s3api",
+      "to": "bucket",
+      "label": "写入即追加版本"
+    },
+    {
+      "id": "bucket-to-lifecycle",
+      "from": "bucket",
+      "to": "lifecycle",
+      "label": "挂载规则",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "版本链",
+      "items": [
+        "覆盖 = 追加新 VersionId",
+        "删除 = 插入 delete marker",
+        "按 VersionId 可回滚任意版本"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "生命周期",
+      "items": [
+        "声明式规则：前缀过期 / 非当前版本过期",
+        "真实 AWS 后台异步执行",
+        "LocalStack 只保存配置"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "预签名 URL",
+      "items": [
+        "SigV4 把一次 GET 签进 URL",
+        "持有者免凭证下载",
+        "到期作废（模拟器不严格）"
+      ]
+    }
+  ]
+}

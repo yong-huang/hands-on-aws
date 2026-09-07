@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Map 动态并行与 Saga 补偿",
+    "output": "stepfunctions_map_saga.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "start",
+      "type": "external",
+      "label": "订单输入",
+      "sublabel": "seed + items[]",
+      "pos": [
+        50,
+        190
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "reserve",
+      "type": "backend",
+      "label": "Reserve 扣库存",
+      "sublabel": "Retry×1 · Catch",
+      "pos": [
+        320,
+        190
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "States.TaskFailed 才重试"
+    },
+    {
+      "id": "ship",
+      "type": "messagebus",
+      "label": "Map 发货",
+      "sublabel": "ShipOne × N",
+      "pos": [
+        640,
+        190
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "MaxConcurrency 2"
+    },
+    {
+      "id": "cancel",
+      "type": "security",
+      "label": "Compensate 取消",
+      "sublabel": "退回已扣库存",
+      "pos": [
+        640,
+        400
+      ],
+      "size": [
+        160,
+        62
+      ]
+    },
+    {
+      "id": "done",
+      "type": "backend",
+      "label": "Done",
+      "sublabel": "fulfilled/compensated",
+      "pos": [
+        880,
+        190
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack Step Functions",
+      "wraps": [
+        "reserve",
+        "ship",
+        "cancel",
+        "done"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "r",
+      "from": "start",
+      "to": "reserve",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m",
+      "from": "reserve",
+      "to": "ship",
+      "label": "成功"
+    },
+    {
+      "id": "d",
+      "from": "ship",
+      "to": "done",
+      "label": "结果数组"
+    },
+    {
+      "id": "c",
+      "from": "reserve",
+      "to": "cancel",
+      "label": "重试耗尽 Catch",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "c2",
+      "from": "cancel",
+      "to": "done",
+      "label": "compensated",
+      "variant": "dashed",
+      "fromSide": "right",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Map",
+      "items": [
+        "ItemsPath 指向数组",
+        "MaxConcurrency 控并发",
+        "输出为分支结果数组"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Saga 补偿",
+      "items": [
+        "Catch 捕获重试耗尽",
+        "反向任务退回库存",
+        "执行仍 SUCCEEDED"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "分类重试",
+      "items": [
+        "TaskFailed 重试 1 次",
+        "Timeout 不重试",
+        "历史可核对失败次数"
+      ]
+    }
+  ]
+}

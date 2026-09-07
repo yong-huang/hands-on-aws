@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  EnvName:
+    Type: String
+Resources:
+  ChildBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "ho26-child-${EnvName}"

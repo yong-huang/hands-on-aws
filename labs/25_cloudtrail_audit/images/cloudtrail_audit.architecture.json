@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "审计闭环：四要素事件 → 过滤 → 日报",
+    "output": "cloudtrail_audit.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "ops",
+      "type": "external",
+      "label": "敏感操作",
+      "sublabel": "删除/授权变更",
+      "pos": [
+        50,
+        190
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "trail",
+      "type": "cloud",
+      "label": "CloudTrail",
+      "sublabel": "LookupEvents",
+      "pos": [
+        330,
+        110
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "本构建不支持"
+    },
+    {
+      "id": "logs",
+      "type": "database",
+      "label": "审计日志组",
+      "sublabel": "四要素结构化事件",
+      "pos": [
+        330,
+        290
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "降级路线（实线）"
+    },
+    {
+      "id": "report",
+      "type": "backend",
+      "label": "审计日报",
+      "sublabel": "谁 × 操作 × 次数",
+      "pos": [
+        670,
+        290
+      ],
+      "size": [
+        160,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack（先探活再选路线）",
+      "wraps": [
+        "trail",
+        "logs",
+        "report"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "t",
+      "from": "ops",
+      "to": "trail",
+      "label": "理想路线",
+      "variant": "dashed"
+    },
+    {
+      "id": "l",
+      "from": "ops",
+      "to": "logs",
+      "label": "结构化留痕",
+      "variant": "emphasis"
+    },
+    {
+      "id": "q",
+      "from": "logs",
+      "to": "report",
+      "label": "过滤 → 解析 → 聚合"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "四要素",
+      "items": [
+        "eventSource 服务",
+        "eventName 操作",
+        "userIdentity 谁",
+        "resourceName 对什么"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "探活纪律",
+      "items": [
+        "create-trail 不支持即降级",
+        "同构结构零迁移成本",
+        "真实 AWS 切 Trail 路线"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "查询坑",
+      "items": [
+        "pattern 过滤不生效（实测）",
+        "客户端过滤兜底",
+        "统一 --output json 解析"
+      ]
+    }
+  ]
+}

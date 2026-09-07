@@ -1,0 +1,12 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "minimal-s3-read",
+    "Effect": "Allow",
+    "Action": ["s3:GetObject", "s3:ListBucket"],
+    "Resource": [
+      "arn:aws:s3:::ho08-vault",
+      "arn:aws:s3:::ho08-vault/*"
+    ]
+  }]
+}

@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Lambda 事件驱动：一个函数三种入口",
+    "output": "lambda_events.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "调用方",
+      "sublabel": "aws lambda invoke",
+      "pos": [
+        60,
+        130
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "s3src",
+      "type": "cloud",
+      "label": "S3 源桶",
+      "sublabel": "ObjectCreated:*",
+      "pos": [
+        60,
+        250
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "后缀过滤 .json"
+    },
+    {
+      "id": "src",
+      "type": "database",
+      "label": "DynamoDB 源表",
+      "sublabel": "Streams NEW_AND_OLD_IMAGES",
+      "pos": [
+        60,
+        370
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "Lambda ho04-fn",
+      "sublabel": "python3.12 · 256MB",
+      "pos": [
+        420,
+        250
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "tag": "路由 3 种输入"
+    },
+    {
+      "id": "audit",
+      "type": "database",
+      "label": "审计表 ho04-events",
+      "sublabel": "事件落库（非源表）",
+      "pos": [
+        720,
+        250
+      ],
+      "size": [
+        160,
+        66
+      ]
+    },
+    {
+      "id": "logs",
+      "type": "cloud",
+      "label": "CloudWatch Logs",
+      "sublabel": "/aws/lambda/ho04-fn",
+      "pos": [
+        720,
+        370
+      ],
+      "size": [
+        160,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack（函数经 LOCALSTACK_HOSTNAME 访问各服务）",
+      "wraps": [
+        "s3src",
+        "src",
+        "fn",
+        "audit",
+        "logs"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "invoke",
+      "from": "client",
+      "to": "fn",
+      "label": "同步 Invoke 要结果",
+      "variant": "emphasis",
+      "toSide": "top"
+    },
+    {
+      "id": "s3-trig",
+      "from": "s3src",
+      "to": "fn",
+      "label": "上传事件 (.json)"
+    },
+    {
+      "id": "stream-trig",
+      "from": "src",
+      "to": "fn",
+      "label": "事件源映射拉取",
+      "toSide": "bottom"
+    },
+    {
+      "id": "fn-to-audit",
+      "from": "fn",
+      "to": "audit",
+      "label": "put_item 记录事件"
+    },
+    {
+      "id": "fn-to-logs",
+      "from": "fn",
+      "to": "logs",
+      "label": "print 结构化日志",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两种事件源",
+      "items": [
+        "S3 通知：推模型，可前后缀过滤",
+        "Streams：拉模型，天然保序",
+        "函数内按 eventSource 分派"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "网络陷阱",
+      "items": [
+        "运行时是独立容器",
+        "localhost:4566 不可达",
+        "用注入的 LOCALSTACK_HOSTNAME"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "错误与重试",
+      "items": [
+        "同步失败：errorType 堆栈",
+        "异步失败：自动重试",
+        "审计写别的表，避免流回环"
+      ]
+    }
+  ]
+}

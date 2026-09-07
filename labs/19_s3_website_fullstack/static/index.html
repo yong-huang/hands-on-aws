@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta charset="utf-8"><title>ho19 留言板</title></head>
+<body>
+  <h1>ho19 留言板（S3 静态托管 + API 后端）</h1>
+  <input id="msg" placeholder="写点留言…"/>
+  <button onclick="post()">提交</button>
+  <ul id="list"></ul>
+  <script>
+    // API 地址由部署脚本注入（execute-api 端点）
+    const API = window.API_BASE || "";
+    async function refresh() {
+      const r = await fetch(API + "/messages");
+      const d = await r.json();
+      document.getElementById("list").innerHTML =
+        d.messages.map(m => `<li>${m.message}</li>`).join("");
+    }
+    async function post() {
+      await fetch(API + "/messages", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({message: document.getElementById("msg").value}),
+      });
+      document.getElementById("msg").value = "";
+      refresh();
+    }
+    refresh();
+  </script>
+</body>
+</html>

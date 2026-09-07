@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CloudWatch Logs：可查询、可计算、可流转",
+    "output": "cloudwatch_logs.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "external",
+      "label": "应用",
+      "sublabel": "结构化 JSON 日志",
+      "pos": [
+        50,
+        190
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "group",
+      "type": "database",
+      "label": "日志组 /ho21/app",
+      "sublabel": "流 app-日期 · 保留 7 天",
+      "pos": [
+        330,
+        190
+      ],
+      "size": [
+        180,
+        70
+      ],
+      "tag": "组→流→事件"
+    },
+    {
+      "id": "mf",
+      "type": "security",
+      "label": "Metric Filter",
+      "sublabel": "$.level=\"ERROR\" → 指标",
+      "pos": [
+        660,
+        110
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "cw",
+      "type": "cloud",
+      "label": "AppErrors 指标",
+      "sublabel": "CloudWatch",
+      "pos": [
+        660,
+        210
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "sub",
+      "type": "security",
+      "label": "Subscription Filter",
+      "sublabel": "全量订阅",
+      "pos": [
+        660,
+        310
+      ],
+      "size": [
+        170,
+        62
+      ]
+    },
+    {
+      "id": "clean",
+      "type": "backend",
+      "label": "清洗 Lambda",
+      "sublabel": "gzip 解包落库",
+      "pos": [
+        660,
+        410
+      ],
+      "size": [
+        170,
+        62
+      ],
+      "tag": "实测生效"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（容器时钟落后 3h，打点需回拨）",
+      "wraps": [
+        "group",
+        "mf",
+        "cw",
+        "sub",
+        "clean"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "write",
+      "from": "app",
+      "to": "group",
+      "label": "put-log-events",
+      "variant": "emphasis"
+    },
+    {
+      "id": "metric",
+      "from": "group",
+      "to": "mf",
+      "label": "命中过滤",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "to-cw",
+      "from": "mf",
+      "to": "cw",
+      "label": "贡献 1",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 40
+    },
+    {
+      "id": "subf",
+      "from": "group",
+      "to": "sub",
+      "label": "实时推送",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "clean2",
+      "from": "sub",
+      "to": "clean",
+      "label": "gzip 事件",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 40
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两条旁路",
+      "items": [
+        "Metric Filter：日志变指标",
+        "Subscription Filter：日志进管道",
+        "都挂在日志组上"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "结构化",
+      "items": [
+        "JSON 字段级查询",
+        "Filter 按字段值匹配",
+        "纯文本做不到"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机实测",
+      "items": [
+        "时钟漂移：tooNew 拒绝",
+        "put-log-events 检查 rejected",
+        "订阅清洗落库实测通过"
+      ]
+    }
+  ]
+}

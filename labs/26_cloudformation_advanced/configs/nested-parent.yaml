@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ho26 父栈：嵌套子栈 + 跨栈引用 + DeletionPolicy 保护
+Parameters:
+  EnvName:
+    Type: String
+    Default: dev
+Resources:
+  ChildQueue:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: http://localhost:4566/ho26-templates/nested-child.yaml
+      Parameters:
+        EnvName: dev
+  SharedTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "ho26-${EnvName}-topic"
+  ProtectedBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub "ho26-${EnvName}-retained"
+Outputs:
+  TopicArn:
+    Value: !Ref SharedTopic
+    Export:
+      Name: Ho26TopicArn

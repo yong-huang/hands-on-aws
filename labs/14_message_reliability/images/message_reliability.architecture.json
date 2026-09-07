@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "消息可靠性：幂等 · 毒丸 · 重驱 · FIFO",
+    "output": "message_reliability.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "prod",
+      "type": "external",
+      "label": "生产者",
+      "sublabel": "send",
+      "pos": [
+        50,
+        210
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "main",
+      "type": "messagebus",
+      "label": "主队列 ho14-main",
+      "sublabel": "VisibilityTimeout 3s",
+      "pos": [
+        290,
+        210
+      ],
+      "size": [
+        160,
+        66
+      ],
+      "tag": "at-least-once"
+    },
+    {
+      "id": "cons",
+      "type": "backend",
+      "label": "消费者",
+      "sublabel": "处理 → 删除",
+      "pos": [
+        570,
+        210
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "毒丸=失败不删除"
+    },
+    {
+      "id": "dedup",
+      "type": "database",
+      "label": "去重表",
+      "sublabel": "键 = messageId",
+      "pos": [
+        770,
+        400
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "重复投递跳过"
+    },
+    {
+      "id": "dlq",
+      "type": "messagebus",
+      "label": "DLQ",
+      "sublabel": "maxReceiveCount=3",
+      "pos": [
+        830,
+        210
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "重驱搬回主队列"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack SQS + DynamoDB",
+      "wraps": [
+        "main",
+        "cons",
+        "dedup",
+        "dlq"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "send",
+      "from": "prod",
+      "to": "main",
+      "label": "投递（可能重复）",
+      "variant": "emphasis"
+    },
+    {
+      "id": "recv",
+      "from": "main",
+      "to": "cons",
+      "label": "receive"
+    },
+    {
+      "id": "idem",
+      "from": "cons",
+      "to": "dedup",
+      "label": "查重记账",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 50
+    },
+    {
+      "id": "dead",
+      "from": "main",
+      "to": "dlq",
+      "label": "连续失败 3 次",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "幂等闭环",
+      "items": [
+        "处理成功但未删除 = 消息重现",
+        "去重表命中 → duplicate 跳过",
+        "投递两次，业务只处理一次"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "毒丸与重驱",
+      "items": [
+        "失败不删除累计 3 次入 DLQ",
+        "修 bug → 死信搬回主队列",
+        "健康消费者处理成功，两队列清零"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "FIFO",
+      "items": [
+        "同 MessageGroupId 严格有序",
+        "跨组并行",
+        "组键 = 串行化最小业务单元"
+      ]
+    }
+  ]
+}

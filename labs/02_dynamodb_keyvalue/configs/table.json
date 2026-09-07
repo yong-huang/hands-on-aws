@@ -1,0 +1,24 @@
+{
+  "TableName": "ho02-orders",
+  "BillingMode": "PAY_PER_REQUEST",
+  "AttributeDefinitions": [
+    { "AttributeName": "customer_id", "AttributeType": "S" },
+    { "AttributeName": "order_id",    "AttributeType": "S" },
+    { "AttributeName": "channel",     "AttributeType": "S" },
+    { "AttributeName": "amount",      "AttributeType": "N" }
+  ],
+  "KeySchema": [
+    { "AttributeName": "customer_id", "KeyType": "HASH" },
+    { "AttributeName": "order_id",    "KeyType": "RANGE" }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "channel-amount-index",
+      "KeySchema": [
+        { "AttributeName": "channel", "KeyType": "HASH" },
+        { "AttributeName": "amount",  "KeyType": "RANGE" }
+      ],
+      "Projection": { "ProjectionType": "ALL" }
+    }
+  ]
+}

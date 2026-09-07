@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SQS 点对点 与 SNS 扇出：消息的两副面孔",
+    "output": "sqs_sns_messaging.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "producer",
+      "type": "external",
+      "label": "生产者",
+      "sublabel": "send / publish",
+      "pos": [
+        50,
+        170
+      ],
+      "size": [
+        130,
+        62
+      ]
+    },
+    {
+      "id": "sqs",
+      "type": "messagebus",
+      "label": "SQS 主队列",
+      "sublabel": "VisibilityTimeout 5s",
+      "pos": [
+        280,
+        170
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "at-least-once"
+    },
+    {
+      "id": "consumer",
+      "type": "backend",
+      "label": "消费者",
+      "sublabel": "receive → 处理",
+      "pos": [
+        550,
+        170
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "dlq",
+      "type": "messagebus",
+      "label": "DLQ 死信队列",
+      "sublabel": "maxReceiveCount=3",
+      "pos": [
+        800,
+        170
+      ],
+      "size": [
+        150,
+        66
+      ]
+    },
+    {
+      "id": "sns",
+      "type": "messagebus",
+      "label": "SNS 主题",
+      "sublabel": "ho03-topic",
+      "pos": [
+        280,
+        360
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "扇出点"
+    },
+    {
+      "id": "qall",
+      "type": "messagebus",
+      "label": "订阅 q-all",
+      "sublabel": "无过滤，全收",
+      "pos": [
+        580,
+        300
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "qred",
+      "type": "messagebus",
+      "label": "订阅 q-red",
+      "sublabel": "FilterPolicy: color=red",
+      "pos": [
+        580,
+        430
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack 消息服务",
+      "wraps": [
+        "sqs",
+        "dlq",
+        "sns",
+        "qall",
+        "qred"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "p-to-q",
+      "from": "producer",
+      "to": "sqs",
+      "label": "send",
+      "variant": "emphasis"
+    },
+    {
+      "id": "q-to-c",
+      "from": "sqs",
+      "to": "consumer",
+      "label": "receive（不删会重现）"
+    },
+    {
+      "id": "q-to-dlq",
+      "from": "sqs",
+      "to": "dlq",
+      "label": "3 次失败转移",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "top"
+    },
+    {
+      "id": "p-to-sns",
+      "from": "producer",
+      "to": "sns",
+      "label": "publish"
+    },
+    {
+      "id": "sns-to-all",
+      "from": "sns",
+      "to": "qall",
+      "label": "全量投递"
+    },
+    {
+      "id": "sns-to-red",
+      "from": "sns",
+      "to": "qred",
+      "label": "匹配才投",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "队列（点对点）",
+      "items": [
+        "一条消息一个消费者",
+        "收到不删 = 稍后重现",
+        "失败 3 次进 DLQ"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "主题（扇出）",
+      "items": [
+        "一次发布 N 个订阅各得一份",
+        "FilterPolicy 按属性裁剪",
+        "队列策略授权 SNS 写入"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "FIFO 补充",
+      "items": [
+        ".fifo 后缀 + 消息组",
+        "组内严格有序",
+        "ContentBasedDeduplication 去重"
+      ]
+    }
+  ]
+}

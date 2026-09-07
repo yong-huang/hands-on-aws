@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "API 防护：API Key 识别 · Usage Plan 限流 · Authorizer",
+    "output": "apigw_http_api_auth.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "客户端",
+      "sublabel": "带 x-api-key / token",
+      "pos": [
+        50,
+        200
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "gw",
+      "type": "cloud",
+      "label": "API Gateway",
+      "sublabel": "/secure · /admin",
+      "pos": [
+        330,
+        200
+      ],
+      "size": [
+        160,
+        70
+      ],
+      "tag": "keyRequired / CUSTOM 鉴权"
+    },
+    {
+      "id": "plan",
+      "type": "security",
+      "label": "Usage Plan",
+      "sublabel": "1 rps · burst 1",
+      "pos": [
+        330,
+        400
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "绑定 Key 与 Stage"
+    },
+    {
+      "id": "authz",
+      "type": "security",
+      "label": "Lambda Authorizer",
+      "sublabel": "TOKEN 型",
+      "pos": [
+        660,
+        400
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "策略文档"
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "回显后端",
+      "sublabel": "ho17-echo",
+      "pos": [
+        660,
+        200
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（限流/Authorizer 执行未强制，如实记录）",
+      "wraps": [
+        "gw",
+        "fn"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "req",
+      "from": "client",
+      "to": "gw",
+      "label": "GET /secure /admin",
+      "variant": "emphasis"
+    },
+    {
+      "id": "gw-fn",
+      "from": "gw",
+      "to": "fn",
+      "label": "放行后代理调用"
+    },
+    {
+      "id": "gw-authz",
+      "from": "gw",
+      "to": "authz",
+      "label": "先取策略文档",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "plan-gw",
+      "from": "plan",
+      "to": "gw",
+      "label": "限流参数",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "实测通过",
+      "items": [
+        "无 Key 403 / 有 Key 200",
+        "Key 绑计划、计划绑 Stage",
+        "CUSTOM 鉴权类型生效"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机边界",
+      "items": [
+        "429 未强制（计划参数可配）",
+        "Authorizer 未被执行",
+        "HTTP API v2 create-api 不支持"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "选型速记",
+      "items": [
+        "REST API：Key/Plan/WAF 全功能",
+        "HTTP API：便宜低延迟 + JWT 内置",
+        "真实 AWS 验证执行类能力"
+      ]
+    }
+  ]
+}

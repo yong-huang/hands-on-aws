@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "IAM 身份与 STS 临时凭证：策略说了算，信任说了算",
+    "output": "iam_sts.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "alice",
+      "type": "external",
+      "label": "IAM 用户 alice",
+      "sublabel": "长期 AccessKey",
+      "pos": [
+        60,
+        240
+      ],
+      "size": [
+        160,
+        66
+      ]
+    },
+    {
+      "id": "policy",
+      "type": "security",
+      "label": "最小权限策略",
+      "sublabel": "只读 ho08-vault",
+      "pos": [
+        60,
+        430
+      ],
+      "size": [
+        160,
+        66
+      ],
+      "tag": "挂组不挂人"
+    },
+    {
+      "id": "sts",
+      "type": "cloud",
+      "label": "STS",
+      "sublabel": "assume-role",
+      "pos": [
+        400,
+        100
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "role",
+      "type": "security",
+      "label": "ho08-reader-role",
+      "sublabel": "信任策略: 信任 alice",
+      "pos": [
+        400,
+        390
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "发 15 分钟临时凭证"
+    },
+    {
+      "id": "vault",
+      "type": "database",
+      "label": "ho08-vault",
+      "sublabel": "受保护资源",
+      "pos": [
+        760,
+        240
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack：身份/凭证机制可用，资源级授权不执行",
+      "wraps": [
+        "sts",
+        "role",
+        "vault"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "identity",
+      "from": "alice",
+      "to": "sts",
+      "label": "get-caller-identity",
+      "variant": "emphasis",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "assume",
+      "from": "sts",
+      "to": "role",
+      "label": "AssumeRole",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 110
+    },
+    {
+      "id": "access",
+      "from": "role",
+      "to": "vault",
+      "label": "以 assumed-role 访问",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "attach",
+      "from": "policy",
+      "to": "alice",
+      "label": "组策略绑定",
+      "variant": "dashed",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "身份与凭证",
+      "items": [
+        "长期密钥证明我是谁",
+        "临时三元组 15 分钟自动过期",
+        "缺 SessionToken 直接 403"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "双向授权",
+      "items": [
+        "策略：能做什么",
+        "信任策略：谁可以来",
+        "两边同时点头才生效"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "模拟器边界",
+      "items": [
+        "LocalStack 不执行资源级 IAM",
+        "越权 PutObject 实测放行",
+        "效果验证需真实 AWS"
+      ]
+    }
+  ]
+}

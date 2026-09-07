@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Terraform (labs/09, 27)
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+*.tfplan
+
+# CDK / SAM (labs/28, 29)
+node_modules/
+cdk.out/
+.aws-sam/
+build/
+
+# 临时产物
+*.zip
+*.b64
+*.tmp
+tmp/
+.DS_Store

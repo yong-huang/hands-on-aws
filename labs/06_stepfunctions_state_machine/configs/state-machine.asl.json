@@ -1,0 +1,78 @@
+{
+  "Comment": "ho06 订单编排：校验 → 收款(重试/补偿) → 并行(通知+审计)",
+  "StartAt": "Validate",
+  "States": {
+    "Validate": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:ho06-validate",
+      "ResultPath": "$",
+      "Next": "Valid?"
+    },
+    "Valid?": {
+      "Type": "Choice",
+      "Choices": [
+        { "Variable": "$.valid", "BooleanEquals": true, "Next": "Charge" }
+      ],
+      "Default": "Rejected"
+    },
+    "Charge": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:ho06-charge",
+      "Retry": [
+        {
+          "ErrorEquals": ["States.TaskFailed"],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        { "ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "Compensate" }
+      ],
+      "ResultPath": "$.charge",
+      "Next": "FanOut"
+    },
+    "FanOut": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "Notify",
+          "States": {
+            "Notify": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:000000000000:function:ho06-notify",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Audit",
+          "States": {
+            "Audit": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:000000000000:function:ho06-audit",
+              "End": true
+            }
+          }
+        }
+      ],
+      "ResultPath": "$.fanout",
+      "Next": "Done"
+    },
+    "Rejected": {
+      "Type": "Pass",
+      "Parameters": { "decision": "rejected", "seed.$": "$.seed" },
+      "End": true
+    },
+    "Compensate": {
+      "Type": "Pass",
+      "Parameters": { "decision": "compensated", "cause.$": "$.error.Cause" },
+      "End": true
+    },
+    "Done": {
+      "Type": "Pass",
+      "Parameters": { "decision": "fulfilled", "seed.$": "$.seed", "fanout.$": "$.fanout" },
+      "End": true
+    }
+  }
+}

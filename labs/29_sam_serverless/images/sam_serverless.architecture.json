@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SAM：一份模板全家桶上线",
+    "output": "sam_serverless.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "tpl",
+      "type": "frontend",
+      "label": "template.yaml",
+      "sublabel": "SimpleTable + Events",
+      "pos": [
+        50,
+        190
+      ],
+      "size": [
+        170,
+        66
+      ],
+      "tag": "Api / Schedule"
+    },
+    {
+      "id": "build",
+      "type": "backend",
+      "label": "samlocal build",
+      "sublabel": "打包 CodeUri",
+      "pos": [
+        370,
+        190
+      ],
+      "size": [
+        160,
+        62
+      ]
+    },
+    {
+      "id": "deploy",
+      "type": "cloud",
+      "label": "samlocal deploy",
+      "sublabel": "经 S3 → CFN",
+      "pos": [
+        660,
+        190
+      ],
+      "size": [
+        160,
+        62
+      ]
+    },
+    {
+      "id": "api",
+      "type": "cloud",
+      "label": "RestApi /Prod",
+      "sublabel": "/tasks",
+      "pos": [
+        660,
+        400
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "POST/GET 实测"
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "TaskFn",
+      "sublabel": "rate(1 day) 定时",
+      "pos": [
+        930,
+        400
+      ],
+      "size": [
+        150,
+        62
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（隐式 Outputs 不回填，如实记录）",
+      "wraps": [
+        "deploy",
+        "api",
+        "fn"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "v",
+      "from": "tpl",
+      "to": "build",
+      "label": "validate",
+      "variant": "emphasis"
+    },
+    {
+      "id": "bd",
+      "from": "build",
+      "to": "deploy",
+      "label": ".aws-sam 构建物"
+    },
+    {
+      "id": "ad",
+      "from": "deploy",
+      "to": "api"
+    },
+    {
+      "id": "af",
+      "from": "deploy",
+      "to": "fn",
+      "label": "函数+事件源",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "事件源一行挂",
+      "items": [
+        "Api：自动建网关集成",
+        "Schedule：rate(1 day) 定时",
+        "S3/SQS/Stream 同理"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测闭环",
+      "items": [
+        "POST /tasks 201",
+        "GET 回显任务",
+        "Api+Schedule 随栈注册"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机差异",
+      "items": [
+        "隐式 Outputs 不回填",
+        "端点从资源表推导",
+        "删除用 sam delete"
+      ]
+    }
+  ]
+}

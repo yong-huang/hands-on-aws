@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Terraform 工程化：module × workspace × 状态",
+    "output": "terraform_engineering.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "root",
+      "type": "cloud",
+      "label": "根模块",
+      "sublabel": "main.tf · locals.env",
+      "pos": [
+        80,
+        190
+      ],
+      "size": [
+        160,
+        66
+      ],
+      "tag": "workspace=环境"
+    },
+    {
+      "id": "m1",
+      "type": "database",
+      "label": "module sqsbucket",
+      "sublabel": "S3 + SQS",
+      "pos": [
+        430,
+        110
+      ],
+      "size": [
+        180,
+        62
+      ]
+    },
+    {
+      "id": "m2",
+      "type": "database",
+      "label": "module snsdemo",
+      "sublabel": "SNS",
+      "pos": [
+        430,
+        260
+      ],
+      "size": [
+        180,
+        62
+      ]
+    },
+    {
+      "id": "res",
+      "type": "database",
+      "label": "dev / stg 资源",
+      "sublabel": "名字带环境后缀",
+      "pos": [
+        740,
+        190
+      ],
+      "size": [
+        170,
+        66
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（状态本地自持，远端可迁 S3）",
+      "wraps": [
+        "res"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "u1",
+      "from": "root",
+      "to": "m1",
+      "label": "source 引用",
+      "variant": "emphasis"
+    },
+    {
+      "id": "u2",
+      "from": "root",
+      "to": "m2",
+      "label": "source 引用"
+    },
+    {
+      "id": "a1",
+      "from": "m1",
+      "to": "res",
+      "label": "apply 落地"
+    },
+    {
+      "id": "a2",
+      "from": "m2",
+      "to": "res",
+      "label": "apply 落地",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "工程化要素",
+      "items": [
+        "module 可复用",
+        "workspace 隔离环境",
+        "plan -out 机器可读"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测数据",
+      "items": [
+        "dev: ho27-app-bucket-dev",
+        "stg: ho27-app-bucket-stg",
+        "-target 重建 = 3 destroy + 3 create"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "命令坑",
+      "items": [
+        "workspace/output 不接受 -input",
+        "apply <plan> 不接受尾部 -input",
+        "clean 复位模板保幂等"
+      ]
+    }
+  ]
+}

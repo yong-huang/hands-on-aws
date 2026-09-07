@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "电商订单流水线：下单 → 加密归档 → 过滤扇出 → 消费收口",
+    "output": "serverless_order_pipeline.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "客户端",
+      "sublabel": "POST /orders",
+      "pos": [
+        60,
+        240
+      ],
+      "size": [
+        140,
+        62
+      ]
+    },
+    {
+      "id": "apigw",
+      "type": "cloud",
+      "label": "API Gateway",
+      "sublabel": "Stage v1 · AWS_PROXY",
+      "pos": [
+        290,
+        240
+      ],
+      "size": [
+        160,
+        66
+      ]
+    },
+    {
+      "id": "fn",
+      "type": "backend",
+      "label": "订单服务 Lambda",
+      "sublabel": "ho10-order-fn",
+      "pos": [
+        560,
+        230
+      ],
+      "size": [
+        160,
+        76
+      ],
+      "tag": "校验 · 加密 · 归档 · 发布"
+    },
+    {
+      "id": "s3",
+      "type": "database",
+      "label": "S3 订单归档",
+      "sublabel": "orders/*.json",
+      "pos": [
+        560,
+        60
+      ],
+      "size": [
+        170,
+        62
+      ],
+      "tag": "卡号只存密文"
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "KMS",
+      "sublabel": "alias/ho10",
+      "pos": [
+        360,
+        430
+      ],
+      "size": [
+        130,
+        60
+      ],
+      "tag": "加密卡号"
+    },
+    {
+      "id": "sm",
+      "type": "security",
+      "label": "Secrets",
+      "sublabel": "ho10/db",
+      "pos": [
+        540,
+        430
+      ],
+      "size": [
+        130,
+        60
+      ],
+      "tag": "库凭据"
+    },
+    {
+      "id": "sns",
+      "type": "messagebus",
+      "label": "SNS 主题",
+      "sublabel": "amount 属性",
+      "pos": [
+        800,
+        240
+      ],
+      "size": [
+        150,
+        66
+      ],
+      "tag": "扇出点"
+    },
+    {
+      "id": "qnotify",
+      "type": "messagebus",
+      "label": "通知队列",
+      "sublabel": "全量投递",
+      "pos": [
+        720,
+        430
+      ],
+      "size": [
+        140,
+        60
+      ]
+    },
+    {
+      "id": "qaudit",
+      "type": "messagebus",
+      "label": "审计队列",
+      "sublabel": "numeric >100 才投",
+      "pos": [
+        920,
+        430
+      ],
+      "size": [
+        150,
+        60
+      ],
+      "tag": "worker drain"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566",
+      "wraps": [
+        "apigw",
+        "fn",
+        "s3",
+        "kms",
+        "sm",
+        "sns",
+        "qnotify",
+        "qaudit"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "order-in",
+      "from": "client",
+      "to": "apigw",
+      "label": "POST /orders"
+    },
+    {
+      "id": "proxy",
+      "from": "apigw",
+      "to": "fn",
+      "label": "代理集成",
+      "variant": "emphasis"
+    },
+    {
+      "id": "archive",
+      "from": "fn",
+      "to": "s3",
+      "label": "归档订单",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "encrypt",
+      "from": "fn",
+      "to": "kms",
+      "label": "encrypt 卡号",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "cred",
+      "from": "fn",
+      "to": "sm",
+      "label": "取库凭据",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDx": 70
+    },
+    {
+      "id": "publish",
+      "from": "fn",
+      "to": "sns",
+      "label": "publish(amount)"
+    },
+    {
+      "id": "fan-notify",
+      "from": "sns",
+      "to": "qnotify",
+      "label": "全收",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "fan-audit",
+      "from": "sns",
+      "to": "qaudit",
+      "label": "过滤投递",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "安全内建",
+      "items": [
+        "敏感字段进系统即加密",
+        "Secrets 凭据不进代码",
+        "密文可用 KMS 解回（授权方）"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "事件扇出",
+      "items": [
+        "SNS 按消息属性过滤",
+        "数值比较需 Number 类型",
+        "队列深度 = 业务积压"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "工程纪律",
+      "items": [
+        "apply 幂等可重跑",
+        "observe 后消费归零",
+        "clean 全链路退场"
+      ]
+    }
+  ]
+}

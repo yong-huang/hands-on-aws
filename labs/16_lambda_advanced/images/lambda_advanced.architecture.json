@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Lambda 工程化：Layer · 版本别名 · 异步死信",
+    "output": "lambda_advanced.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "lib",
+      "type": "frontend",
+      "label": "Layer 仓库",
+      "sublabel": "ho16-shared:1",
+      "pos": [
+        60,
+        100
+      ],
+      "size": [
+        150,
+        62
+      ],
+      "tag": "python/ 结构"
+    },
+    {
+      "id": "fn1",
+      "type": "backend",
+      "label": "app ($LATEST)",
+      "sublabel": "128MB",
+      "pos": [
+        640,
+        100
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "ver",
+      "type": "database",
+      "label": "版本 v1",
+      "sublabel": "不可变快照",
+      "pos": [
+        380,
+        250
+      ],
+      "size": [
+        150,
+        62
+      ]
+    },
+    {
+      "id": "alias",
+      "type": "security",
+      "label": "别名 prod",
+      "sublabel": "指向 v1",
+      "pos": [
+        900,
+        100
+      ],
+      "size": [
+        140,
+        62
+      ],
+      "tag": "回滚=改指针"
+    },
+    {
+      "id": "dest",
+      "type": "messagebus",
+      "label": "OnFailure 队列",
+      "sublabel": "重试耗尽的事件",
+      "pos": [
+        640,
+        400
+      ],
+      "size": [
+        160,
+        62
+      ],
+      "tag": "异步兜底"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack Lambda（层挂载本构建未生效，如实记录）",
+      "wraps": [
+        "fn1",
+        "ver",
+        "alias",
+        "dest"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "layer-attach",
+      "from": "lib",
+      "to": "fn1",
+      "label": "挂载依赖",
+      "variant": "dashed"
+    },
+    {
+      "id": "publish",
+      "from": "fn1",
+      "to": "ver",
+      "label": "publish-version",
+      "variant": "emphasis",
+      "fromSide": "left",
+      "toSide": "right"
+    },
+    {
+      "id": "fail",
+      "from": "fn1",
+      "to": "dest",
+      "label": "失败重试耗尽",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "版本与别名",
+      "items": [
+        "$LATEST 是草稿",
+        "publish 固化不可变版本",
+        "别名回滚 = 改一次指针"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "异步兜底",
+      "items": [
+        "失败自动重试（可配次数）",
+        "耗尽后事件进 OnFailure 队列",
+        "携带错误详情便于排查"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "调优实测",
+      "items": [
+        "128MB vs 512MB: 3ms vs 2ms",
+        "小函数瓶颈在冷启动",
+        "CPU 随内存线性提升"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "本机边界",
+      "items": [
+        "层挂载：API 正常 /opt 为空",
+        "加权别名路由不支持",
+        "均如实记录，真实 AWS 可用"
+      ]
+    }
+  ]
+}
