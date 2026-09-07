@@ -22,3 +22,6 @@ build/
 *.tmp
 tmp/
 .DS_Store
+
+# 视觉评审临时渲染
+*.review.png

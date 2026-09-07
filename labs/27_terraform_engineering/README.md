@@ -96,10 +96,10 @@ labs/27_terraform_engineering/
 ├── README.md                        # 本文件
 ├── terraform_engineering.sh         # 主脚本：init → 双环境 → 增量 → state → 清理
 └── configs/terraform/
-    ├── main.tf                      # 根模块：引用子模块、workspace 决定环境
+    ├── main.tf                          # 根模块：引用子模块、workspace 决定环境
     └── modules/
-        ├── sqsbucket/{main.tf}      # S3+SQS 模块（variable/output）
-        └── snsdemo/{main.tf}        # SNS 模块
+        ├── sqsbucket/main.tf            # S3+SQS 模块（variable/output）
+        └── snsdemo/main.tf              # SNS 模块
 ```
 
 > 注：图片三件套见 `images/`。

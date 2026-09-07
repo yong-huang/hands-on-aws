@@ -109,7 +109,9 @@ labs/30_log_analytics_platform/
 ├── Makefile                     # make run / deploy / clean
 ├── generate_load.py             # SDK 生成器 + 全链路断言
 ├── functions/cleaner.py         # 清洗 Lambda（脱敏/明细/归档/告警）
-├── cdk_app/{app.py,cdk.json}    # 平台栈定义（流/表/桶/函数/队列）
+├── cdk_app/
+│   ├── app.py                   # 平台栈定义（流/表/桶/函数/队列）
+│   └── cdk.json                 # CDK 配置
 └── images/
     ├── log_analytics_platform.architecture.json  # 图源（Typed JSON IR）
     ├── log_analytics_platform.html               # 交互版
