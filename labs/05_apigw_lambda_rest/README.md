@@ -113,7 +113,7 @@ labs/05_apigw_lambda_rest/
     └── apigw_lambda_rest.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: REST API 与 HTTP API 怎么选？** A: REST API 功能全（API Key/Usage Plan、
   请求校验、WAF、私有化）；HTTP API 便宜延迟低、路由简单。lab 17 有实测对比。

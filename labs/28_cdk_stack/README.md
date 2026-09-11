@@ -106,7 +106,7 @@ labs/28_cdk_stack/
     └── cdk_stack.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: CDK 的 L1/L2/L3 Construct？** A: L1 是裸 CFN 资源（CfnBucket）；L2 带默认
   值与便利方法（Bucket）；L3 是模式封装（Bucket + 队列 + 通知一键）。优先 L2。

@@ -119,7 +119,7 @@ labs/12_kinesis_streams/
     └── kinesis_streams.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: Kinesis 与 SQS 的本质区别？** A: SQS 是队列（消费即删除、消息级确认）；
   Kinesis 是日志（记录保留 24h~365 天、消费进度自管、可重放、按分片有序）。

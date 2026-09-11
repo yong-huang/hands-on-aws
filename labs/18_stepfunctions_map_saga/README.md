@@ -110,7 +110,7 @@ labs/18_stepfunctions_map_saga/
     └── stepfunctions_map_saga.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: Map 与 Parallel 的区别？** A: Parallel 是固定数量分支同时跑（结构编译期
   确定）；Map 对运行时数组循环，元素数任意，天然适合批处理。

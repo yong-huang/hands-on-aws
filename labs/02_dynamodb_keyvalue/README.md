@@ -122,7 +122,7 @@ labs/02_dynamodb_keyvalue/
     └── dynamodb_keyvalue.svg            # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 分区键怎么选？** A: 选"高基数 + 访问模式命中"的属性——既让负载均匀打散
   到各分区，又让你的高频查询都是单分区 Query。

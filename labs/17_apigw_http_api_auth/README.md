@@ -105,7 +105,7 @@ labs/17_apigw_http_api_auth/
     └── apigw_http_api_auth.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: API Key 是安全机制吗？** A: 不是，只是客户端识别与配额计量；真正的
   访问控制用 IAM/Cognito/Lambda Authorizer + HTTPS。

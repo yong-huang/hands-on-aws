@@ -101,7 +101,7 @@ labs/29_sam_serverless/
     └── sam_serverless.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: SAM 与 CFN 的关系？** A: SAM 是 CFN 的无服务器方言（Transform 展开为
   普通资源），SAM 模板可以混写 CFN 资源；展开后与手写 CFN 无差别。

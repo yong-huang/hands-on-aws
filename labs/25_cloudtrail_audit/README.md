@@ -94,7 +94,7 @@ labs/25_cloudtrail_audit/
 
 > 注：图片三件套见 `images/`。
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: CloudTrail 与 CloudWatch Logs 的分工？** A: CloudTrail 记"控制面 API 调用"
   （谁改了什么配置）；Logs 记"应用运行日志"。管理事件审计用 Trail，应用排障用

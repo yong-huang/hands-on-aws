@@ -97,7 +97,7 @@ labs/22_cloudwatch_alarms/
 
 > 注：图片三件套见 `images/`。
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: period/evaluationPeriods 如何权衡误报漏报？** A: 窗口越短越灵敏越毛躁；
   连续 N 个窗口越限才告警可压误报，代价是漏报窗口拉长。

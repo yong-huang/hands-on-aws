@@ -3,7 +3,7 @@
 > 想学 AWS，第一道坎是"没有账号不敢动手"。LocalStack 在本机容器里模拟了 S3 的
 > API，`aws` CLI 只需换个 `--endpoint-url` 就能把对象存储玩明白。本实验从最朴素
 > 的"上传一个文件"开始，一路做到版本回滚和免凭证下载——这四件事几乎覆盖了 S3
-> 面试与日常运维的全部高频考点。
+> 技术面试与日常运维的全部高频考点。
 
 ## 1. 为什么需要它
 
@@ -125,7 +125,7 @@ labs/01_s3_object_storage/
     └── s3_object_storage.svg                # 双主题矢量图（本 README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 开了版本控制后 delete 掉的对象还能恢复吗？** A: 能。删除只是插入 delete
   marker，用 `list-object-versions` 找到历史 VersionId 直接 GET，或删掉 marker 复活。

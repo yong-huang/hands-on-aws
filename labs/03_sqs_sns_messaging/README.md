@@ -125,7 +125,7 @@ labs/03_sqs_sns_messaging/
     └── sqs_sns_messaging.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: SQS 标准队列为什么可能重复投递？消费者怎么办？** A: 分布式队列为保证
   可用性选择"至少一次"；可见期内未删除就会重现。消费者用幂等键（messageId 去重

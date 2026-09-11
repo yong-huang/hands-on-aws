@@ -128,7 +128,7 @@ labs/06_stepfunctions_state_machine/
     └── stepfunctions_state_machine.svg            # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: Standard 与 Express 工作流的区别？** A: Standard 精确一次、执行历史 90 天、
   适合长流程；Express 高吞吐、至少一次、按执行时长计费，适合IoT/流式短任务。

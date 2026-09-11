@@ -107,7 +107,7 @@ labs/26_cloudformation_advanced/
     └── cloudformation_advanced.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 变更集与直接 update 的区别？** A: 只差"审阅关口"——变更集把 Actions
   （Add/Modify/Remove）逐资源列出，高危 Replace 一眼可见；执行语义相同。

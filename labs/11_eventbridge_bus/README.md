@@ -102,7 +102,7 @@ labs/11_eventbridge_bus/
     └── eventbridge_bus.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: EventBridge 与 SNS 的本质区别？** A: SNS 是"推拉订阅"的消息服务，过滤
   能力弱（属性匹配）；EventBridge 是事件总线，支持**内容模式匹配**、转换、

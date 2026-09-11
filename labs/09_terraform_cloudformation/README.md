@@ -112,7 +112,7 @@ labs/09_terraform_cloudformation/
     └── terraform_cloudformation.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: Terraform state 的作用？丢了会怎样？** A: state 是"真实世界与模板"的
   对账本；丢了 Terraform 就不认识自己建的资源——只能手工 import 或重建。

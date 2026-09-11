@@ -97,7 +97,7 @@ labs/24_encryption_pipeline/
 
 > 注：图片三件套见 `images/`；依赖 `pip3 install cryptography`。
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: SSE-S3 与 SSE-KMS 的区别？** A: SSE-S3 用 AWS 托管钥匙，审计与控制力弱；
   SSE-KMS 用你的 CMK——可审计每一次解密（CloudTrail）、可撤权、可设定轮换。

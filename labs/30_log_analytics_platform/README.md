@@ -118,7 +118,7 @@ labs/30_log_analytics_platform/
     └── log_analytics_platform.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 为什么用 Kinesis 而不是直接写 DynamoDB？** A: 削峰、缓冲、多消费者
   （明细入箱 + 实时告警 + 归档共用一条流）；写入侧不感知下游容量。

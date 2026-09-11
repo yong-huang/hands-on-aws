@@ -102,7 +102,7 @@ labs/19_s3_website_fullstack/
     └── s3_website_fullstack.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 静态站要不要开 CDN？** A: 生产必开 CloudFront：缓存、HTTPS（S3 website
   端点只有 HTTP）、自定义域名、防抖——S3 website 端点只作源站。

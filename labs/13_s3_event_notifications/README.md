@@ -106,7 +106,7 @@ labs/13_s3_event_notifications/
     └── s3_event_notifications.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: S3 通知与 S3→EventBridge 怎么选？** A: 单一目标、低延迟选通知配置；
   多目标/模式匹配/跨账户/归档重放选 EventBridge（事件先进总线再路由）。

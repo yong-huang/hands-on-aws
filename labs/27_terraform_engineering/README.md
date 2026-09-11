@@ -104,7 +104,7 @@ labs/27_terraform_engineering/
 
 > 注：图片三件套见 `images/`。
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: module 的 inputs/outputs 怎么设计？** A: input 只收"业务语义"参数（名称、
   环境），不收实现细节；output 只暴露下游真正要用的值（ARN/名称），像函数 API。

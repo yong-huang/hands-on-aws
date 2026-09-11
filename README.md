@@ -31,7 +31,7 @@ bash scripts/load_resources.sh          # check | start | probe | fix-dynamodb
 
 ## 学习路线与实验列表
 
-每个实验目录：`README.md`（原理+用法+面试要点）· `xxx.sh`（主演示脚本）·
+每个实验目录：`README.md`（原理+用法+深入要点）· `xxx.sh`（主演示脚本）·
 `configs/`（声明式配置，按需）· `images/`（架构图三件套：图源 JSON / 交互 HTML / 内嵌 SVG）。
 
 ### 第一阶段 · 存储与服务基础

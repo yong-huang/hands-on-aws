@@ -100,7 +100,7 @@ labs/14_message_reliability/
     └── message_reliability.svg             # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 为什么不能做到 exactly-once 投递？** A: 分布式系统中"至少一次 + 消费幂等"
   工程上等价于 exactly-once，且成本远低于全局事务；幂等键选业务 ID 而非随机数。

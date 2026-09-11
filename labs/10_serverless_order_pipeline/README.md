@@ -113,7 +113,7 @@ labs/10_serverless_order_pipeline/
     └── serverless_order_pipeline.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 为什么用 SNS+SQS 扇出而不是一个队列多个消费者？** A: 一份订单事件要给
   多个独立系统（通知/审计），队列只支持一个消费者组；SNS 复制语义天然匹配，

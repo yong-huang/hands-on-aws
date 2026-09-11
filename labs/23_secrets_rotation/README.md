@@ -103,7 +103,7 @@ labs/23_secrets_rotation/
 
 > 注：图片三件套见 `images/`。
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: 四步轮换为什么需要 setSecret/testSecret？** A: create 只是"准备好"；set
   真正改数据库侧密码；test 用新密码连通验证；全部通过才 finish——顺序保证

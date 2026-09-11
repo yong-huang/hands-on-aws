@@ -116,7 +116,7 @@ labs/04_lambda_events/
     └── lambda_events.svg                # 双主题矢量图（README 内嵌）
 ```
 
-## 7. 面试要点
+## 7. 深入要点
 
 - **Q: Lambda 冷启动是什么？如何缓解？** A: 首次调用要拉起执行环境（本实验容器
   方式冷启动 3~5 秒）；缓解：内存调大、初始化放 handler 外、Provisioned
