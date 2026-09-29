@@ -1,32 +1,63 @@
 # 06 · Step Functions 状态机编排：分支、并行、重试与补偿
 
-> Lambda 一个函数只干一件事，但真实业务是流水账："校验 → 扣款 → 通知 + 审计 →
-> 完成"，还要处理"扣款失败了怎么办"。把这些 if/else 和重试写进代码就是一坨面条；
-> Step Functions 用**状态机**（Amazon States Language，一套 JSON）把流程画成图纸，
-> 失败重试、并行分支、错误补偿全是声明式配置。
+> AWS Step Functions 是一种托管的工作流编排服务：用 JSON 状态机（Amazon States
+> Language，ASL）声明多步流程的控制流，由平台驱动 Lambda 等任务按图执行。本实验
+> 用一个订单状态机跑通成功、拒绝、重试补偿三条路径，共 9 项真实断言。
 
-## 1. 为什么需要它
+## Background
 
-- **流程即配置**：ASL 一个 JSON 描述全部控制流，代码（Lambda）只负责业务动作，
-  排错时执行历史就是"每一步的输入输出回放"。
-- **可靠性内置**：`Retry` 声明"失败重试几次、间隔多少、指数退避"，`Catch` 声明
-  "重试耗尽去哪"——不用手写重试循环。
-- 本实验的三条路径（成功/拒绝/补偿）就是生产订单系统的三种真实结局。
+在编排服务普及之前，多步业务流程（校验 → 扣款 → 通知 → 审计）的控制流写在
+应用代码里：顺序调用、try/catch、手写重试循环。
 
-## 2. 总览：核心机制一图看懂
+代码化的控制流撞上两堵墙。第一，失败处理让代码膨胀：扣款失败要重试几次？重试
+耗尽去哪？每加一步业务，容错代码翻一倍。
 
-![Step Functions 状态机](images/stepfunctions_state_machine.svg)
+第二，流程不可观测：线上卡在哪一步、每步的输入输出是什么，要靠翻应用日志
+拼凑。Step Functions（2016 年推出）把控制流从代码里抽出来：用 ASL 这套 JSON
+声明状态与转移，平台驱动执行，并为每次执行保留完整的输入输出历史。
 
-> 怎么看：主线是"校验 → 收款 → 并行(通知‖审计) → 完成"；Choice 菱形按
-> `$.valid` 分流；Charge 节点挂着重试环（失败 3 次后）跳入补偿分支——**补偿后
-> 整个执行仍是 SUCCEEDED**，Saga 的雏形。
+## What
 
-> 🌐 **交互版**：[在线打开（GitHub Pages）](https://hyhit.github.io/hands-on-aws/labs/06_stepfunctions_state_machine/images/stepfunctions_state_machine.html)
-> （或本地打开 [`images/stepfunctions_state_machine.html`](images/stepfunctions_state_machine.html)）。
+一句话定义：Step Functions 是一种以状态机（state machine，由状态与转移组成的
+有向图）为核心的编排服务，按声明驱动任务执行并记录每步的输入输出。
 
-心智模型一句话：**状态机管控制流，Lambda 管业务流；失败是数据，不是异常。**
+心智模型：可以把状态机想象成一张地铁线路图——每个车站是一个状态（本实验用到
+5 种：Task 调 Lambda、Choice 条件分支、Parallel 并行双线、Pass 数据加工、
+终态），列车（执行）按图行驶并在每站留下车票存根（执行历史）。
 
-## 3. 快速开始
+但和地铁不同的是：某站故障时列车不会停在半路，而是按声明的 Retry 与 Catch
+规则改道——失败被当成一种数据交给后续状态处理。
+
+三个关键机制：
+
+- **Retry**：声明式重试，可配次数、间隔与指数退避。
+- **Catch**：重试耗尽后的分流去向，错误对象（errorType/Cause）作为数据传入
+  下一个状态。
+- **ResultPath**：决定任务结果合并进输入（`$.charge`）还是覆盖输入（`$`）。
+
+## When to Use
+
+典型场景：
+
+- 多步业务流程：订单履约、退款审批——步骤间有依赖、有条件分支、有失败补偿。
+- 需要可审计的流程：执行历史天然是"每步输入输出"的回放，排错不靠翻日志。
+- 批处理：Map 状态对数组并行执行同一子流程（lab 18 深化）。
+
+何时不用：单一 API 请求内的小逻辑（几行 if/else 能解决，直接写代码）；超高
+吞吐的简单转发（每步编排有状态管理开销）。
+
+同类方案对比：
+
+| 方案 | 差异 | 什么时候选它 |
+|:---|:---|:---|
+| Step Functions Standard | 持久状态机、执行历史 90 天、精确一次 | 业务流程编排、长周期任务 |
+| Step Functions Express | 高吞吐、便宜、至少一次 | 短平快的海量事件处理 |
+| 代码内编排（temporal 等） | 自建/自托管，灵活 | 需要特定 SDK 能力或自托管 |
+| 消息队列（MQ）+ 消费者 | 无流程概念，只管投递 | 单步解耦，无需多步编排 |
+
+## Quick Start
+
+前置条件：LocalStack 运行中。运行方式：
 
 ```bash
 cd labs/06_stepfunctions_state_machine
@@ -34,7 +65,7 @@ cd labs/06_stepfunctions_state_machine
 ./stepfunctions_state_machine.sh observe    # 只跑三条路径断言（约 40 秒，含重试退避）
 ```
 
-真实运行输出（节选）：
+脚本 observe 阶段的真实输出（节选）：
 
 ```text
 =====> [observe] 成功路径 seed=2：校验过 → 收款 → Parallel 双分支 → fulfilled
@@ -46,104 +77,68 @@ cd labs/06_stepfunctions_state_machine
   ✅ Charge 失败 3 次（首跑 + Retry×2），重试真实发生
 ```
 
-## 4. 核心概念
-
-### 4.1 ASL 六种基本状态
-
-本实验用到 5 种：`Task`（调 Lambda）、`Choice`（按 `$.valid` 分支）、`Parallel`
-（双分支同跑）、`Pass`（注入/改写数据）、`Succeed/Fail`（终态）。所有状态靠
-`Next` 串成图，`ResultPath` 决定结果**合并进**输入还是覆盖输入。
-
-### 4.2 Retry：重试是声明，不是循环
+状态机定义在 `configs/state-machine.asl.json`，其中重试规则是最核心的一段：
 
 ```jsonc
-"Retry": [{ "ErrorEquals": ["States.TaskFailed"],
-            "IntervalSeconds": 1, "MaxAttempts": 2, "BackoffRate": 2.0 }]
-```
-
-实测（seed=3）：charge 首跑失败 → 1s 后重试 → 2s 后再重试 → 仍失败 → 执行历史
-里 `LambdaFunctionFailed` 恰好 3 条。`BackoffRate` 让每次间隔乘 2——指数退避。
-
-### 4.3 Catch：失败是数据
-
-重试耗尽后 `Catch` 把错误对象（`errorType/Cause`）放进 `$.error`，跳到
-`Compensate` 分支"反向冲账"。**整个 execution 状态是 SUCCEEDED**——业务上的
-失败被业务路径消化，这才叫补偿而非崩溃。
-
-### 4.4 数据流：ResultPath 是关键旋钮
-
-- `"ResultPath": "$.charge"`：任务结果塞进 `$.charge`，原输入保留；
-- `"ResultPath": "$"`：覆盖整个输入（Validate 就这么干）；
-- `Pass` 的固定 `Result` 会**整体覆盖输入**——要透传字段用 `Parameters` +
-  `"seed.$": "$.seed"`（`.$` 后缀 = JSONPath 引用）。
-
-## 5. 配置关键字段（configs/state-machine.asl.json）
-
-```jsonc
-{
-  "StartAt": "Validate",
-  "States": {
-    "Valid?": {                       // Choice：命中 true 走 Charge，否则 Default
-      "Type": "Choice",
-      "Choices": [{ "Variable": "$.valid", "BooleanEquals": true, "Next": "Charge" }],
-      "Default": "Rejected"
-    },
-    "Charge": {
-      "Type": "Task",
-      "Resource": "arn:aws:lambda:...:function:ho06-charge",   // LocalStack 直调本机函数
-      "Retry": [ /* 见 4.2 */ ],
-      "Catch":  [{ "ErrorEquals": ["States.ALL"], "ResultPath": "$.error", "Next": "Compensate" }],
-      "ResultPath": "$.charge",       // 结果合并而非覆盖
-      "Next": "FanOut"
-    },
-    "FanOut": { "Type": "Parallel", "Branches": [ /* Notify‖Audit 各自成图 */ ], "Next": "Done" }
+"Retry": [
+  {
+    "ErrorEquals": ["States.TaskFailed"],   // 匹配"任务执行失败"这类错误
+    "IntervalSeconds": 1,                   // 首次重试间隔 1 秒
+    "MaxAttempts": 2,                       // 最多重试 2 次（不含首跑）
+    "BackoffRate": 2.0                      // 每次间隔乘 2（1s → 2s，指数退避）
   }
-}
+]
 ```
 
-坑清单：
+新手第一个失败点：`Pass` 状态写固定 `Result` 会**整体覆盖**输入数据——要用
+`Parameters` 加 `"字段.$": "$.字段"` 才能透传原输入（本实验的 Rejected/
+Compensate 状态就是这么写的）。
 
-- **LocalStack 执行历史用旧版事件名**：`LambdaFunctionFailed/TaskFailed` 而非新版
-  `TaskFailed`，按事件类型断言重试时要用旧名（本实验已处理）；
-- Choice 必须有 `Default`，否则未命中直接抛 States.NoChoiceMatched；
-- 函数返回异常 → 状态机视角是 `States.TaskFailed`；Lambda 本身超时/被拒才是
-  `States.Timeout/Permissions`——重试规则按错误类别分开写；
-- Pass 状态不带 `ResultPath` 默认覆盖整个输入，血泪坑。
+## How It Works
 
-## 6. 文件结构
+![Step Functions 状态机](images/stepfunctions_state_machine.svg)
 
-```text
-labs/06_stepfunctions_state_machine/
-├── README.md                          # 本文件
-├── stepfunctions_state_machine.sh     # 主演示脚本：部署 → 三条路径 → 清理
-├── configs/
-│   └── state-machine.asl.json         # 状态机定义（声明式，apply 直接消费）
-├── functions/                         # 4 个真实 Lambda（脚本打包成 zip 部署）
-│   ├── validate.py                    # seed>0 → 校验通过
-│   ├── charge.py                      # seed=3 模拟收款被拒
-│   ├── notify.py / audit.py           # Parallel 双分支
-└── images/
-    ├── stepfunctions_state_machine.workflow.json  # 图源（Typed JSON IR）
-    ├── stepfunctions_state_machine.html           # 交互版
-    └── stepfunctions_state_machine.svg            # 双主题矢量图（README 内嵌）
-```
+> 怎么看：主线是"校验 → 收款 → 并行(通知‖审计) → 完成"；Choice 菱形按
+> `$.valid` 分流；Charge 节点挂着重试环（失败 3 次后）跳入补偿分支——**补偿后
+> 整个执行仍是 SUCCEEDED**——Saga（把大事务拆成本地事务序列、失败时反向
+> 执行补偿的分布式模式）的雏形。
 
-## 7. 深入要点
+> 🌐 **交互版**：[在线打开（GitHub Pages）](https://hyhit.github.io/hands-on-aws/labs/06_stepfunctions_state_machine/images/stepfunctions_state_machine.html)
+> （或本地打开 [`images/stepfunctions_state_machine.html`](images/stepfunctions_state_machine.html)）。
 
-- **Q: Standard 与 Express 工作流的区别？** A: Standard 精确一次、执行历史 90 天、
-  适合长流程；Express 高吞吐、至少一次、按执行时长计费，适合IoT/流式短任务。
-- **Q: 重试耗尽后执行算失败吗？** A: 有 Catch 就不算——错误被Catch 转成数据进入
-  补偿路径，execution 仍 SUCCEEDED；没有 Catch 才 FAILED。
-- **Q: Parallel 的失败语义？** A: 一个分支失败整个 Parallel 失败（其它分支被
-  取消）；需要"部分成功"就把容错写进分支内部（分支自带 Catch）。
-- **Q: Saga 补偿怎么用 Step Functions 实现？** A: 每个正向步骤准备一个反向任务，
-  用 Catch 触发已执行步骤的取消/退款链（lab 18 完整实现）。
-- **Q: ResultPath/ResultSelector/InputPath 三兄弟？** A: InputPath 选输入、
-  ResultSelector 选任务输出的投影、ResultPath 定结果合并位置——三者组合实现
-  数据最小传递。
+**三条路径如何分别走到终点**：
 
-## 8. 总结
+- 成功（seed=2）：Validate 校验通过 → Charge 收款成功 → Parallel 并行跑通知与
+  审计两个分支 → 输出 `decision=fulfilled`，实测双分支结果都进输出。
+- 拒绝（seed=0）：校验不通过 → Choice 命中 `Default` → `decision=rejected`。
+- 补偿（seed=3）：校验通过但收款抛错 → 按声明重试 2 次仍失败 → Catch 把错误
+  放进 `$.error` → Compensate 分支输出 `decision=compensated`——**执行状态仍
+  是 SUCCEEDED**，因为失败已被业务路径消化。
 
-一个 ASL 文件表达了订单的三种命运：fulfilled、rejected、compensated——分支、
-并行、重试、补偿全部真机验证。下一篇给数据上锁：KMS 信封加密与 Secrets Manager
-的版本化机密管理。
+**重试如何被证实**：`get-execution-history` 返回每一步的事件流水。seed=3 的
+执行里 `LambdaFunctionFailed` 事件恰好 3 条（首跑 + 2 次重试）——重试不是
+配置上的文字，而是可数的历史记录。
+
+## Pitfalls & Q&A
+
+踩坑清单（现象 → 原因 → 解法）：
+
+- **Pass 状态把输入"弄丢了"**：固定 `Result` 覆盖整个输入。解法：用
+  `Parameters` + `.$` 后缀引用原输入字段（如 `"seed.$": "$.seed"`）。
+- **断言重试次数查不到事件**：LocalStack 用旧版事件名
+  `LambdaFunctionFailed`，不是新版的 `TaskFailed`。解法：按旧名统计。
+- **Choice 未命中直接失败**：抛 `States.NoChoiceMatched`。解法：永远给
+  Choice 配 `Default`。
+- **`AttributeAlreadyExists` 建状态机失败**：同名状态机残留。解法：先
+  `delete-state-machine`（脚本 apply 已处理）。
+
+深入问答：
+
+- **Q: Standard 与 Express 工作流怎么选？** A: Standard 精确一次、历史 90 天，
+  适合业务流程；Express 高吞吐、至少一次、按执行计费，适合流式短任务。
+- **Q: 重试耗尽后执行算失败吗？** A: 配了 Catch 就不算——错误被转成数据进入
+  补偿路径，execution 仍 SUCCEEDED；没配 Catch 才会 FAILED。
+- **Q: Parallel 的失败语义？** A: 一个分支失败整个 Parallel 失败；要"部分
+  成功"就把容错写进每个分支内部。
+- **Q: Saga 补偿如何实现？** A: 每个正向步骤配一个反向任务，Catch 触发已执行
+  步骤的取消链（lab 18 有完整实现：Map 并行 + 失败自动退回库存）。

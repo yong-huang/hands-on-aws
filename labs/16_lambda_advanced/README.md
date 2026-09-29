@@ -1,19 +1,100 @@
 # 16 · Lambda 进阶：Layers、版本别名与异步死信
 
-> 函数写完只是开始：依赖要共享（Layers）、发布要可回滚（版本+别名）、异步失败的
-> 消息不能蒸发（OnFailure Destination）。本实验把 Lambda 从"能跑"推进到"工程化
-> 可运维"，并对本构建不支持的能力如实记录。
+> 把 Lambda 从"能跑"推进到"工程化可运维"的三件事：Layers（依赖打一次包、N 个
+> 函数共享）、版本与别名（发布可回滚）、异步死信目的地（失败事件不蒸发）。本实验
+> 逐项做实，并对本构建不支持的能力（层挂载、加权路由）如实记录。
 
-## 1. 为什么需要它
+## Background
 
-- **Layer**：公共依赖打一次包、N 个函数共享，版本独立演进——告别"改个工具库要
-  重新部署所有函数"。
-- **版本与别名**：`$LATEST` 是草稿，publish-version 固化快照，别名（prod）指向
-  稳定版——回滚 = 把别名指回去。
-- **异步死信**：异步调用失败自动重试，重试耗尽进 OnFailure Destination，事件
-  终究不丢。
+lab 04 的函数部署是"一次性"的：代码打成 zip、创建函数、能跑就行。生产化会
+立刻提出三个新问题。
 
-## 2. 总览：核心机制一图看懂
+第一，多个函数依赖同一份工具库——改一行要重新部署所有函数，打包产物重复 N
+份。第二，出问题想回滚时发现 `$LATEST` 已经被新代码覆盖，没有"上一个能用的
+版本"可退。第三，异步调用（事件源触发）失败后事件去哪了——没人知道，也就
+没人处理。
+
+Lambda 的 Layer、Version/Alias、OnFailure Destination 三个机制分别
+回应这三个问题。
+
+## What
+
+一句话定义：Layer 是可被多个函数挂载的依赖包（zip，内含 `python/` 目录）；
+Version 是函数在某一时刻的不可变快照；Alias 是指向某个版本的可变命名指针；
+OnFailure Destination 指定异步调用失败事件的去向。
+
+心智模型：可以把版本与别名想象成软件发布——代码仓库里的 main 分支是 `$LATEST`
+（草稿，随时变），打出的 release tag 是 Version（不可变），生产环境配置指向
+某个 tag 就是 Alias。但和真实发布不同的是：回滚只是把指针改回旧 tag 的一次
+API 调用，秒级完成、零重部署。
+
+三个机制的分工：
+
+- **Layer**：解决"依赖怎么共享"，与代码版本独立演进。
+- **Version + Alias**：解决"发布与回滚"，快照不可变、指针可变。
+- **Destination**：解决"异步失败去哪"，携带完整错误详情。
+
+## When to Use
+
+典型场景：
+
+- 多函数共享依赖：日志格式化、签名校验、公司内部 SDK——打一个 Layer 挂 N 个
+  函数，升级只发一次。
+- 生产发布与灰度：prod 别名稳定指向 v1，新版本发布后把 prod 逐步切到 v2
+  （真实 AWS 支持别名加权路由，本机构建不支持，实测如实记录）。
+- 异步任务的失败兜底：支付回调、通知发送失败后进 SQS 死信队列，人工或自动化
+  补偿。
+
+何时不用：单函数项目不必拆 Layer（增加部署复杂度）；同步调用的失败处理写在
+调用方 try/catch 里，Destination 只服务异步语义。
+
+同类方案对比：
+
+| 方案 | 差异 | 什么时候选它 |
+|:---|:---|:---|
+| Layer | 依赖共享，运行时挂载到 /opt | 多函数公共库、大头依赖 |
+| 容器镜像 | 函数整体打包（≤10GB） | 超大依赖、自定义运行时 |
+| OnFailure Destination | 失败事件带错误详情路由 | 异步失败兜底（优于旧式 DLQ） |
+| DLQ（旧机制） | 仅 SQS/SNS，事件较简 | 兼容存量配置 |
+
+## Quick Start
+
+前置条件：LocalStack（在本机模拟 AWS API 的工具）运行中；`npm i -g aws-cdk-local aws-cdk` 不需要——本
+实验只用 aws CLI。运行方式：
+
+```bash
+cd labs/16_lambda_advanced
+./lambda_advanced.sh            # Layer+双函数 → 版本/别名/死信/调优 → 清理
+```
+
+脚本 observe 阶段的真实输出（节选）：
+
+```text
+=====> [observe] 代码复用：两个函数都 import 到 ho16_lib（Layer API 已挂载，见下方如实记录）
+  ✅ ho16-app 通过层拿到问候
+=====> [observe] 版本与别名：publish v1 → 别名 prod 指向 v1
+  ✅ 别名 ho16-app:prod 经 v1 调用成功且层依赖在位
+=====> [observe] 异步失败 → OnFailure Destination 到 SQS（失败重试耗尽后入队）
+  ✅ 异步失败消息（重试 1 次耗尽）进入 OnFailure 队列
+=====> [observe] 加权别名路由支持度（如实记录）
+  ⚠️  别名加权路由此构建不支持（灰度用两别名 + 前端分流替代）
+```
+
+发布与别名的命令序列（`--layers` 创建时挂层，`fn:prod` 语法按别名调用）：
+
+```bash
+awslocal lambda publish-layer-version --layer-name ho16-shared \
+  --zip-file fileb://layer.zip --compatible-runtimes python3.12
+awslocal lambda publish-version --function-name ho16-app
+awslocal lambda create-alias --function-name ho16-app --name prod --function-version 1
+awslocal lambda invoke --function-name ho16-app:prod --payload '{}'
+```
+
+新手第一个失败点：`ModuleNotFoundError: No module named 'ho16_lib'`——本构建
+的 docker 运行时不挂载 Layer（/opt 为空，实测如实记录），函数包内需自包含
+依赖；Layer API 照常创建与挂载，迁移到真实 AWS 行为一致。
+
+## How It Works
 
 ![Lambda 进阶](images/lambda_advanced.svg)
 
@@ -24,108 +105,40 @@
 > 🌐 **交互版**：[在线打开（GitHub Pages）](https://hyhit.github.io/hands-on-aws/labs/16_lambda_advanced/images/lambda_advanced.html)
 > （或本地打开 [`images/lambda_advanced.html`](images/lambda_advanced.html)）。
 
-心智模型一句话：**Layer 管复用，版本管不可变，别名管切换，Destination 管兜底。**
+**异步失败如何兜底**：`put-function-event-invoke-config` 设
+`--maximum-retry-attempts 1` 与 `--destination-config` 的 OnFailure 指向 SQS。
 
-## 3. 快速开始
 
-```bash
-cd labs/16_lambda_advanced
-./lambda_advanced.sh            # Layer+双函数 → 版本/别名/死信/调优 → 清理
-```
+实测 `{"boom":true}` 的异步调用在重试耗尽后整条事件（含错误详情）落进队列——
+这就是"异步失败不蒸发"的机制。
 
-真实运行输出（节选）：
+**内存调优如何实测**：同代码分别以 128MB 与 512MB 部署，从 CloudWatch 的
+REPORT 行取 Duration（实测 3ms vs 2ms）——小函数瓶颈在冷启动（首次调用前拉起运行时的延迟），CPU 随内存线性
+提升只对计算密集型函数有感知。
 
-```text
-=====> [observe] 版本与别名：publish v1 → 别名 prod 指向 v1
-  ✅ 别名 ho16-app:prod 经 v1 调用成功且层依赖在位
-=====> [observe] 内存调优对照：128MB vs 512MB 同代码耗时（取 REPORT 行）
-  128MB: Duration: 3 / 512MB: Duration: 2
-=====> [observe] 异步失败 → OnFailure Destination 到 SQS
-  ✅ 异步失败消息（重试 1 次耗尽）进入 OnFailure 队列
-=====> [observe] 加权别名路由支持度（如实记录）
-  ⚠️  别名加权路由此构建不支持
-```
+**本机构建的两处边界**：① Layer 的 API 全通（创建/挂载/配置可见），但运行时
+不把层挂进容器；② 别名加权路由（routing-config）不支持。两者不影响其余机制，
+迁移真实 AWS 后行为一致。
 
-## 4. 核心概念
+## Pitfalls & Q&A
 
-### 4.1 Layer：依赖的独立发布单元
+踩坑清单（现象 → 原因 → 解法）：
 
-zip 内必须是 `python/` 目录（运行时解到 `/opt/python`）。本实验 `publish-layer-
-version` 成功、函数 `Layers` 配置正确挂载；**但此构建的 docker 运行时未把层挂进
-容器**（`/opt` 为空，import 失败）——如实记录，函数包内自包含同一份库保证可跑，
-真实 AWS 挂载后行为一致。
+- **Layer 挂了但 import 失败**：本构建运行时不挂载层（实测）。解法：函数包
+  自包含依赖，Layer 留作真实 AWS 的优化项。
+- **别名调用写错语法**：`fn:prod` 才走别名，裸函数名永远指 `$LATEST`。
+- **异步失败队列迟迟没有消息**：失败后有重试延迟（本实验 1 次重试约 1~2 分钟
+  内入队）。解法：轮询窗口放大到 2 分钟。
+- **Layer zip 打错层级**：内容必须在 `python/` 前缀下，否则运行时 /opt 里
+  找不到模块（真实 AWS 行为，按规范打包）。
 
-### 4.2 版本快照与别名
+深入问答：
 
-`publish-version` 把当前代码+配置固化为不可变版本（v1）；别名是指向版本的
-可变指针。`invoke --function-name fn:prod` 走别名——**回滚就是一次 update-alias**。
-
-### 4.3 异步调用与 Destination
-
-`--invocation-type Event` 立即返回 202；失败自动重试（本实验设 1 次）→ 耗尽后
-事件整体（含错误信息）进入 OnFailure 指定的 SQS。实测 boom 消息最终出现在
-死信队列。对称地，OnSuccess 也能路由成功结果。
-
-### 4.4 内存调优：it depends
-
-同代码 128MB vs 512MB 各调一次，从 CloudWatch 的 REPORT 行取 Duration 实测
-（3ms vs 2ms）——**CPU 与内存按比例分配**，CPU 密集型函数加内存显著提速，
-I/O 密集型则无感。数据驱动，不要拍脑袋。
-
-## 5. 代码关键字段
-
-```bash
-awslocal lambda publish-layer-version --layer-name ho16-shared \
-  --zip-file fileb://layer.zip --compatible-runtimes python3.12
-
-awslocal lambda create-function ... --layers "$LAYER_ARN"      # 创建时挂层
-
-awslocal lambda put-function-event-invoke-config --function-name fn \
-  --maximum-retry-attempts 1 \
-  --destination-config '{"OnFailure":{"Destination":"arn:aws:sqs:...:ho16-failed-q"}}'
-
-awslocal lambda invoke --function-name fn:prod \
-  --invocation-type Event --payload '{"boom":true}' ...
-```
-
-坑清单：
-
-- Layer zip 根必须是 `python/` 前缀，挂错层级 import 不到；
-- 别名调用要用 `fn:alias` 语法，`fn` 永远指 `$LATEST`；
-- 异步失败消息进队列前有重试延迟（本实验 1 次重试约 1~2 分钟内入队）；
-- update-alias 的 routing-config 加权灰度在本构建不可用（实测），真实 AWS 可用。
-
-## 6. 文件结构
-
-```text
-labs/16_lambda_advanced/
-├── README.md                # 本文件
-├── lambda_advanced.sh       # 主脚本：Layer/双函数/版本别名/死信/调优全流程
-├── functions/
-│   ├── app.py  app2.py      # 两个演示函数（共享同一份 ho16_lib）
-│   └── layer/python/ho16_lib.py   # Layer 内容（python/ 结构）
-└── images/
-    ├── lambda_advanced.architecture.json  # 图源（Typed JSON IR）
-    ├── lambda_advanced.html               # 交互版
-    └── lambda_advanced.svg                # 双主题矢量图（README 内嵌）
-```
-
-## 7. 深入要点
-
-- **Q: Layer 解决什么问题、什么场景不适合？** A: 解决多函数公共依赖的重复打包；
-  不适合频繁单独变更的依赖（会牵连所有挂载函数）与超 250MB 解压上限的大依赖。
-- **Q: 版本、别名、限定版本调用如何配合灰度？** A: prod(90%)→v1、canary(10%)→v2
-  两个别名 + 前端按比例路由；真实 AWS 还支持别名加权路由（本构建不支持，实测）。
-- **Q: 异步调用的重试与时序保证？** A: 失败重试 2 次（可配），事件顺序无保证；
-  需要顺序/精确一次就同步调用或自建状态机。
-- **Q: OnFailure Destination 与 DLQ 的区别？** A: Destination 更新（携带响应/
-  错误详情，支持 SNS/SQS/EventBridge/Lambda）；DLQ 是旧机制仅 SQS/SNS，二者可
-  并存但推荐 Destination。
-- **Q: 内存多大合适？** A: 压测决定：CPU 密集调大内存（CPU 随内存线性提升），
-  纯 I/O 用小内存省成本；看 REPORT 的 Duration + Memory Used。
-
-## 8. 总结
-
-Layer、版本、别名、Destination、调优——函数的"发布工程"四件套就位，本构建的
-两处能力边界（层挂载、加权路由）如实入档。下一篇给 API 立规矩：HTTP API、
-Authorizer 鉴权与 Usage Plan 限流。
+- **Q: Layer 解决什么、不适合什么？** A: 解决多函数公共依赖重复打包；不适合
+  频繁单独变更的依赖（牵连全部挂载者）与超 250MB 解压上限的大依赖。
+- **Q: 灰度发布如何做？** A: prod(90%)→v1、canary(10%)→v2 双别名 + 前端按
+  比例路由；真实 AWS 支持别名加权路由自动分流。
+- **Q: 异步调用的重试与时序？** A: 失败重试 2 次（可配 0~2），事件顺序无保证；
+  需要顺序用同步调用或状态机编排。
+- **Q: Destination 与 DLQ 的区别？** A: Destination 携带完整响应/错误详情、
+  支持 SQS/SNS/EventBridge/Lambda；DLQ 是旧机制仅 SQS/SNS，推荐 Destination。

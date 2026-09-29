@@ -1,32 +1,68 @@
 # 01 · S3 对象存储：版本化桶、生命周期与预签名 URL
 
-> 想学 AWS，第一道坎是"没有账号不敢动手"。LocalStack 在本机容器里模拟了 S3 的
-> API，`aws` CLI 只需换个 `--endpoint-url` 就能把对象存储玩明白。本实验从最朴素
-> 的"上传一个文件"开始，一路做到版本回滚和免凭证下载——这四件事几乎覆盖了 S3
-> 技术面试与日常运维的全部高频考点。
+> S3（Simple Storage Service，AWS 的对象存储服务）是云端"放文件"的事实标准。
+> 本实验在本机 LocalStack（一个模拟 AWS API 的容器）里，用一个脚本跑通对象上传、
+> 版本回滚、声明式过期与免凭证下载，并配 14 项真实断言。
 
-## 1. 为什么需要它
+## Background
 
-- S3 是 AWS 生态的"地基"：静态资源、备份、数据湖、Lambda 事件源，全都长在桶上。
-- 生产事故里最贵的一类是**误删/误覆盖**。S3 的答案是版本控制：写入即追加新版本，
-  删除只是打"删除标记"，任何一步都可回退。
-- 而把文件安全地交给第三方（浏览器、临时脚本）又不泄漏凭证，靠的是**预签名 URL**：
-  把"一次特定操作"签进 URL，到期自动作废。
+在没有对象存储之前，把文件放在云端通常意味着自己开一台服务器挂载磁盘，再用
+FTP 或自建 HTTP 服务对外提供下载。
 
-## 2. 总览：核心机制一图看懂
+这种方式会撞上三堵墙。第一，磁盘容量与扩容要自己管，文件多了还得自己做分片。
+第二，文件被误删或误覆盖没有任何补救手段——磁盘上就是一份，删了就没了。第三，
+把文件给别人下载需要分发长期凭证或自己写鉴权，凭证一旦泄漏，整台机器暴露。
 
-![S3 对象存储架构](images/s3_object_storage.svg)
+S3 在 2006 年应运而生：它把"存文件"抽象成"往桶（bucket，存储的顶层容器）里放
+对象（object，文件内容加上一个叫键 key 的完整路径字符串）"，容量、冗余、按次
+计费全部由服务端接管。本实验要做的，是在本机把这套模型的核心机制逐个跑通。
 
-> 怎么看：开发者用带凭证的 CLI 访问 S3 API（实线主路径）；CLI 还能"签出"一个
-> 预签名 URL 给 curl 免凭证下载（上方虚线）；桶内是**版本链**而非单文件（桶节点
-> 标签），生命周期规则只是挂在桶上的配置（下方虚线）。
+## What
 
-> 🌐 **交互版**：[在线打开（GitHub Pages）](https://hyhit.github.io/hands-on-aws/labs/01_s3_object_storage/images/s3_object_storage.html)
-> （或本地打开 [`images/s3_object_storage.html`](images/s3_object_storage.html)）。
+一句话定义：S3 是一种通过"桶 + 键"来存放和读取不可变对象的对象存储服务——
+每次写入都产生一个新版本，而不是修改旧文件。
 
-心智模型一句话：**桶是版本链的容器，"覆盖"和"删除"都只是往链上加新节点。**
+心智模型：可以把启用版本控制的桶想象成一本只追加的账本——每次"覆盖"是在账本
+末尾加一行，"删除"只是贴一张"此行作废"的便签（delete marker，删除标记）。
 
-## 3. 快速开始
+但和真实账本不同的是：贴了作废便签后，GET 请求会拿到 404，普通使用者视角里
+文件确实消失了；只有知道版本号（VersionId，每次写入生成的唯一标识）的人才能
+翻回历史行。
+
+三个容易误解的基础事实：
+
+- **没有目录**：`notes/readme.txt` 是一个完整的键名字符串，`notes/` 只是前缀
+  约定。所以"列目录"实际是按前缀过滤对象，"空目录"无法独立存在。
+- **删除的真相**：删除操作插入的是一条 delete marker，历史版本仍然在桶里。
+- **过期是声明**：生命周期规则（lifecycle rule，一段描述"哪些对象在什么条件
+  下过期"的 JSON 配置）只是声明意图，清理由服务端后台执行。
+
+## When to Use
+
+典型场景——在做什么事的时候需要它：
+
+- 托管静态资源：网站的前端文件、软件安装包、图片视频，直接以 HTTP 方式分发。
+- 备份与归档：数据库 dump、日志文件按天落桶，配合生命周期规则自动降冷、过期。
+- 作为事件源：文件一落桶就通知下游处理（缩略图、病毒扫描、或流入数据湖——集中存放原始数据供后续分析的大仓库）。
+
+何时不用：数据需要随机更新其中一小块、或要求事务（多条记录同生共死）时，对象
+存储的"整存整取"模型会很别扭，应该用数据库；需要像本地盘一样挂载、随机读写的
+场景应选块存储或文件存储。
+
+同类方案对比：
+
+| 方案 | 差异 | 什么时候选它 |
+|:---|:---|:---|
+| S3 | 对象存储，HTTP 存取，按版本追加 | 静态资源、备份、事件源 |
+| EBS | 块存储，挂到单台虚拟机当磁盘 | 数据库文件、操作系统盘 |
+| EFS | 文件存储，可被多台机器像共享文件夹一样同时挂载（遵循 Unix 文件系统接口）| 多机共享的文件系统语义 |
+| DynamoDB | 键值数据库，随机更新与查询 | 结构化数据的增删改查 |
+
+## Quick Start
+
+前置条件：LocalStack 容器已运行（可用仓库根的 `bash scripts/load_resources.sh
+probe` 确认），本机装有 aws CLI。以下命令全部通过 `--endpoint-url` 指向
+LocalStack，凭证使用固定的 `test/test`。
 
 ```bash
 cd labs/01_s3_object_storage
@@ -36,7 +72,7 @@ cd labs/01_s3_object_storage
 ./s3_object_storage.sh clean      # 删干净，环境复原
 ```
 
-真实运行输出（节选）：
+脚本 observe 阶段的真实输出（节选）：
 
 ```text
 =====> [observe] 覆盖写入 → 同一 key 出现两个版本
@@ -53,38 +89,11 @@ cd labs/01_s3_object_storage
   ✅ 桶已删除，环境复原
 ```
 
-## 4. 核心概念
+新手最可能遇到的第一个失败点是 `Unable to locate credentials`——脚本内部已
+固定导出 `AWS_ACCESS_KEY_ID=test` 等环境变量，手动敲命令时需要先 export 同样的
+值。第二个失败点是 404：LocalStack 没启动，或端口被其他进程占用。
 
-### 4.1 桶与对象：没有"目录"
-
-`notes/readme.txt` 里没有目录 `notes/`，key 是**完整字符串**，前缀只是约定。
-所以 S3 的"列目录"就是按前缀列出对象（`list-objects-v2 --prefix`），这也解释了
-为什么"空目录"无法独立存在。
-
-### 4.2 版本控制：写入即追加
-
-启用 Versioning 后，同一个 key 每次 `PutObject` 生成新 `VersionId`，最新版标
-`IsLatest=true`。**删除的真相**是插入一条 delete marker——GET 命中 marker 返回
-404，但历史版本都在。移除 marker（`delete-object --version-id <marker>`）对象就
-"复活"。
-
-> ⚠️ 易错点：版本化桶直接 `delete-bucket` 会报 `BucketNotEmpty`——必须先物理删光
-> 所有版本**和 delete markers**。本实验的 `purge_bucket()` 就是标准写法。
-
-### 4.3 生命周期规则：过期是声明，不是命令
-
-`configs/lifecycle.json` 声明"raw/ 前缀 30 天过期、非当前版本 7 天过期"。
-注意：**LocalStack 只保存这份配置，不会真的删数据**；真实 AWS 由后台任务异步
-执行，且"到期删除"通常在到期后 24~48 小时内才发生。
-
-### 4.4 预签名 URL：把一次操作签进 URL
-
-`aws s3 presign` 用 SigV4 把"GET 这个对象 + 过期时间"签名成 URL。持 URL 者
-无需任何凭证即可完成这一次下载。本机实测：下载内容一致 ✅；但 LocalStack 不严格
-校验极短有效期（`--expires-in 2` 过期后仍 200），真实 AWS 返回 403——这是
-模拟器的已知差异，以真实环境为准。
-
-## 5. 配置关键字段（configs/lifecycle.json）
+实验用到的声明式配置 `configs/lifecycle.json`，它定义了两条过期规则：
 
 ```jsonc
 {
@@ -105,43 +114,63 @@ cd labs/01_s3_object_storage
 }
 ```
 
-坑清单：
+## How It Works
 
-- `Filter` 与废弃的 `Prefix` 顶层字段不能混用，新版 API 一律写进 `Filter`；
-- `NoncurrentDays` 从"变成非当前版本"起算，不是从创建起算；
-- 版本化桶不加 `NoncurrentVersionExpiration` 等于永不释放空间，账单刺客。
+![S3 对象存储架构](images/s3_object_storage.svg)
 
-## 6. 文件结构
+> 怎么看：实线主路径是开发者带凭证调用 S3 API；桶内是**版本链**而非单文件。
+> 上方虚线是"签出预签名 URL 给 curl 免凭证下载"的旁路；下方虚线表示生命周期
+> 规则只是挂在桶上的声明式配置。
 
-```text
-labs/01_s3_object_storage/
-├── README.md                 # 本文件：原理 + 用法 + 考点
-├── s3_object_storage.sh      # 主演示脚本：apply 创建 / observe 演示断言 / clean 清理
-├── configs/
-│   └── lifecycle.json        # 生命周期规则的声明式配置（apply 阶段挂载）
-└── images/
-    ├── s3_object_storage.architecture.json  # 架构图源（Typed JSON IR）
-    ├── s3_object_storage.html               # 交互版架构图（自包含单文件）
-    └── s3_object_storage.svg                # 双主题矢量图（本 README 内嵌）
-```
+> 🌐 **交互版**：[在线打开（GitHub Pages）](https://hyhit.github.io/hands-on-aws/labs/01_s3_object_storage/images/s3_object_storage.html)
+> （或本地打开 [`images/s3_object_storage.html`](images/s3_object_storage.html)）。
 
-## 7. 深入要点
+**版本链如何工作**：apply 阶段执行 `put-bucket-versioning` 启用版本控制后，
+每次 `PutObject` 都生成新的 VersionId，最新版标记 `IsLatest=true`。
 
-- **Q: 开了版本控制后 delete 掉的对象还能恢复吗？** A: 能。删除只是插入 delete
-  marker，用 `list-object-versions` 找到历史 VersionId 直接 GET，或删掉 marker 复活。
-- **Q: S3 如何做到"强一致"？** A: 2020 年 12 月起 S3 对新建与覆盖写都是强一致
-  (read-after-write)；同 key 并发写以最后写入者获胜，GET 永不读到旧版本。
-- **Q: 预签名 URL 的签名里包含什么？过期后访问会怎样？** A: SigV4 把 method、
-  path、过期时间、凭证范围签进 query；过期返回 403（LocalStack 对极短有效期不严格）。
-- **Q: 桶名为什么要求全局唯一？** A: 桶名同时是虚拟主机域名的一部分
-  (`bucket.s3.amazonaws.com`)，全局 DNS 命名空间里必须唯一；LocalStack 单机无此
-  约束，但命名习惯应与真实一致。
-- **Q: 生命周期规则误配了怎么止损？** A: 规则可改为 Disabled 立即停止匹配；已进入
-  过期队列的对象不可撤回，所以生产上先 Disabled→观察→再删除。
+输出里"readme.txt 有 2 个历史版本"来自 `list-object-versions` 对这条链的计数；
+"按 VersionId 读回 v1"的断言能通过，是因为删除操作只插入 delete marker，从未
+物理移除任何字节。
 
-## 8. 总结
+**预签名 URL 如何工作**：`aws s3 presign` 用 SigV4（AWS 第四版签名算法）把
+请求方法、路径、过期时间和凭证范围一起哈希，签成带查询参数的 URL；签名验证由
+服务端完成，持 URL 者不需要任何凭证。
 
-一个桶 + 版本链 + 声明式过期 + 签名 URL，就是 S3 的日常。回滚、防误删、临时分享
-三个故事在本实验全部真机验证。下一篇把"文件系统"换成"键值数据库"：DynamoDB 的
-分区键、排序键与条件写入——当你的访问模式从"整存整取"变成"按维度查询"，S3 就
-不再是答案。
+脚本里 `--expires-in 2` 加 `sleep 3` 的对照实验，演示的就是过期时间的时效性。
+
+**生命周期规则如何工作**：规则只是桶上的配置。你在 Quick Start 看到脚本 clean
+后桶里空空如也，那是脚本主动删除的结果，不是过期规则执行的——LocalStack 只保存
+规则配置，不模拟后台清理；真实 AWS 的过期删除通常在到期后 24~48 小时内完成。
+
+## Pitfalls & Q&A
+
+踩坑清单（现象 → 原因 → 解法）：
+
+- **版本化桶删不掉，报 `BucketNotEmpty`**：原因——启用了版本控制的桶里还有
+  历史版本和 delete marker。解法——先 `list-object-versions` 列出全部，再逐个
+  `delete-object --version-id` 物理删除；脚本里的 `purge_bucket()` 就是标准写法。
+- **生命周期规则配了但文件没消失**：LocalStack 只保存配置不执行过期；真实 AWS
+  的清理也是异步的（到期后 24~48 小时）。验证配置用
+  `get-bucket-lifecycle-configuration` 即可。
+- **预签名 URL 过期了还能下载**：现象——`--expires-in 2` 过期后请求仍 200；
+  原因——LocalStack 不严格校验有效期（脚本断言里已注明）；解法——以真实 AWS
+  的 403 行为为准。
+- **`Filter` 与 `Prefix` 混用报错**：新版 API 的过滤条件必须写在 `Filter` 里，
+  顶层 `Prefix` 字段已废弃，二者不能混用。
+- **版本化桶不加过期规则**：旧版本永不释放，存储费用持续累积——生产桶应搭配
+  `NoncurrentVersionExpiration`。
+
+深入问答：
+
+- **Q: 删掉的对象还能恢复吗？** A: 能。删除只是插入 delete marker，用
+  `list-object-versions` 找到历史 VersionId 直接 GET，或删除 marker 让对象
+  复活。
+- **Q: S3 是强一致的吗？** A: 2020 年 12 月起新建与覆盖写均为强一致
+  （read-after-write）；同 key 并发写以最后写入者获胜，GET 不会读到旧版本。
+- **Q: 预签名 URL 里签了什么？过期后会怎样？** A: SigV4 把 method、路径、
+  过期时间、凭证范围签进查询参数；过期后真实 AWS 返回 403。
+- **Q: 桶名为什么要求全局唯一？** A: 桶名会出现在虚拟主机域名
+  （`bucket.s3.amazonaws.com`）里，属于全局 DNS 命名空间；LocalStack 单机没有
+  这个约束，但命名习惯应与真实一致。
+- **Q: 生命周期规则配错了怎么止损？** A: 把规则改成 `Disabled` 立即停止匹配新
+  对象；已进入过期队列的对象不可撤回，生产上先 Disabled、观察、再删除。
