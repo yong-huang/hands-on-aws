@@ -1,0 +1,84 @@
+{
+ "Resources": {
+  "FnServiceRoleB9001A96": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho04-consumer-ref-stack/Fn/ServiceRole/Resource"
+   }
+  },
+  "Fn9270CBC0": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "import json, os, boto3\nssm = boto3.client('ssm', endpoint_url=f\"http://{os.environ['LOCALSTACK_HOSTNAME']}:4566\",\n                   region_name=os.environ['AWS_REGION'])\ndef handler(event, context):\n    param = os.environ.get('SSM_PARAM')\n    if param:\n        url = ssm.get_parameter(Name=param)['Parameter']['Value']\n        return {'channel': 'ssm-runtime', 'queue_url': url}\n    return {'channel': 'iac-ref', 'queue_url': os.environ['QUEUE_URL']}\n"
+    },
+    "Environment": {
+     "Variables": {
+      "QUEUE_URL": {
+       "Fn::ImportValue": "ho04-producer-stack:ExportsOutputRefSource71E471F1A71A69A9"
+      }
+     }
+    },
+    "FunctionName": "ho04-ref-fn",
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "FnServiceRoleB9001A96",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "FnServiceRoleB9001A96"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ho04-consumer-ref-stack/Fn/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSMzKz0DNQTCwv1k1OydbNyUzSqw4uSUzO1kksL46vzknMTUpJ1Kt2K81LLsnMz9NxTsuDsWt1MhNz9aqD8nNSQcIgurYWxPIvLSkoLanVCagsycjP0zfWMzTWs1TMKs7M1C0qzSvJzE3VC4LQAFnC0RZ/AAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho04-consumer-ref-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "Channel": {
+   "Value": "stack-attr-importvalue"
+  }
+ }
+}

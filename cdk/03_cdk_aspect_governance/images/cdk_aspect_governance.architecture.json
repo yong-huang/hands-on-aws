@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Aspect 治理：合成期质检流水线",
+    "output": "cdk_aspect_governance.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "visit",
+      "type": "backend",
+      "label": "find_all() × visit()",
+      "sublabel": "Aspects 等价内部实现",
+      "pos": [
+        80,
+        200
+      ],
+      "size": [
+        210,
+        64
+      ],
+      "tag": "python 实测形式"
+    },
+    {
+      "id": "tag",
+      "type": "security",
+      "label": "TaggingAspect",
+      "sublabel": "owner + lab 逐节点打标",
+      "pos": [
+        400,
+        100
+      ],
+      "size": [
+        200,
+        62
+      ]
+    },
+    {
+      "id": "comp",
+      "type": "security",
+      "label": "ComplianceAspect",
+      "sublabel": "违规累积，一次抛出",
+      "pos": [
+        400,
+        300
+      ],
+      "size": [
+        200,
+        62
+      ]
+    },
+    {
+      "id": "tree",
+      "type": "cloud",
+      "label": "构造树 Stack 节点",
+      "sublabel": "L2 桶 / L1 裸桶 / IAM Policy",
+      "pos": [
+        700,
+        200
+      ],
+      "size": [
+        210,
+        64
+      ],
+      "tag": "L1 绕过无所遁形"
+    },
+    {
+      "id": "cfn",
+      "type": "cloud",
+      "label": "LocalStack :4566",
+      "sublabel": "合规栈 + 修复栈部署",
+      "pos": [
+        700,
+        380
+      ],
+      "size": [
+        210,
+        64
+      ]
+    },
+    {
+      "id": "gate",
+      "type": "external",
+      "label": "report_or_none()",
+      "sublabel": "exit(1) 拦截进 CI",
+      "pos": [
+        400,
+        440
+      ],
+      "size": [
+        200,
+        56
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "t1",
+      "from": "visit",
+      "to": "tag"
+    },
+    {
+      "id": "t2",
+      "from": "visit",
+      "to": "comp"
+    },
+    {
+      "id": "t3",
+      "from": "tag",
+      "to": "tree"
+    },
+    {
+      "id": "t4",
+      "from": "comp",
+      "to": "tree"
+    },
+    {
+      "id": "t5",
+      "from": "comp",
+      "to": "gate"
+    },
+    {
+      "id": "t6",
+      "from": "tree",
+      "to": "cfn"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三类违规",
+      "items": [
+        "[L2] 桶无加密配置",
+        "[L1-绕过] 裸桶绕过",
+        "[IAM] 精确 * 授权"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "3 桶标签齐全含 L1",
+        "bad 拦截退出码 1",
+        "fix=1 修复路径通过"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "Aspects.add 触发 jsii 序列化 bug",
+        "ITaggable 非运行时可判",
+        "deploy 会重新合成需带 context"
+      ]
+    }
+  ]
+}

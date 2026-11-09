@@ -1,0 +1,134 @@
+{
+ "Resources": {
+  "AuditS37B3B9FDE": {
+   "Type": "AWS::S3::Bucket",
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ho01-l3-stack/Audit/S3/Resource"
+   }
+  },
+  "AuditS3Policy17FDF8A3": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "AuditS37B3B9FDE"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "AuditS37B3B9FDE",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "AuditS37B3B9FDE",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "s3:GetBucketAcl",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "cloudtrail.amazonaws.com"
+       },
+       "Resource": {
+        "Fn::GetAtt": [
+         "AuditS37B3B9FDE",
+         "Arn"
+        ]
+       }
+      },
+      {
+       "Action": "s3:PutObject",
+       "Condition": {
+        "StringEquals": {
+         "s3:x-amz-acl": "bucket-owner-full-control"
+        }
+       },
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "cloudtrail.amazonaws.com"
+       },
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "AuditS37B3B9FDE",
+            "Arn"
+           ]
+          },
+          "/AWSLogs/000000000000/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho01-l3-stack/Audit/S3/Policy/Resource"
+   }
+  },
+  "Audit3D8ADE0A": {
+   "Type": "AWS::CloudTrail::Trail",
+   "Properties": {
+    "EnableLogFileValidation": true,
+    "EventSelectors": [],
+    "IncludeGlobalServiceEvents": true,
+    "IsLogging": true,
+    "IsMultiRegionTrail": true,
+    "S3BucketName": {
+     "Ref": "AuditS37B3B9FDE"
+    }
+   },
+   "DependsOn": [
+    "AuditS3Policy17FDF8A3"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ho01-l3-stack/Audit/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/0WI3QrCIBSAn2X3eqoJUbf1AI3qPuxs0UmnMY+MIb57mEFX308L7XYH60bPQWJvpKU7pAtrNELP4ZbQ+tjzpMlCuhaI48N9JYugIB0imoHL/FlF5y3h8t+1cy7nFPkdOYtu4ad3KwUbBfvmFYjkFB3TOMC58gODUtxknQAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho01-l3-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "L3Note": {
+   "Value": "one construct -> bucket+policy+trail"
+  }
+ }
+}

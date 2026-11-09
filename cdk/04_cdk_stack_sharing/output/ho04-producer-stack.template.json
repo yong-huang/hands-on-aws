@@ -1,0 +1,39 @@
+{
+ "Resources": {
+  "Source71E471F1": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "QueueName": "ho04-src-queue"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho04-producer-stack/Source/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSMzKz0DNQTCwv1k1OydbNyUzSqw4uSUzO1kksL44vLizWqw4sTS1N1XFOywMzakEs/9KSgtKSWp2AypKM/Dx9Yz1DYz1LxazizEzdotK8kszcVL0gCA0A1jktV2EAAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho04-producer-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "SrcQueueUrl": {
+   "Value": {
+    "Ref": "Source71E471F1"
+   }
+  },
+  "ExportsOutputRefSource71E471F1A71A69A9": {
+   "Value": {
+    "Ref": "Source71E471F1"
+   },
+   "Export": {
+    "Name": "ho04-producer-stack:ExportsOutputRefSource71E471F1A71A69A9"
+   }
+  }
+ }
+}

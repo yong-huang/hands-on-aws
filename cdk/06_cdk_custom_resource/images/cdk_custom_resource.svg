@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1360 640" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">CR 三幕：播种、刷新、清场</title>
+        <desc id="archify-diagram-description">由 Archify 生成的时序图。</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Time Segments -->
+
+
+        <!-- Lifelines -->
+        <path d="M 62 142 L 62 575" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 170 142 L 170 575" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 278 142 L 278 575" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+
+        <!-- Activations -->
+
+
+        <!-- Messages -->
+        <g data-edge-from="cfn" data-edge-to="crfn" data-edge-label="Create (Seeds×3)" data-edge-key="0" data-edge-id="m1">
+          <path data-composition-edge-from="cfn" data-composition-edge-to="crfn" data-composition-edge-id="m1" data-composition-points="69,160;163,160" d="M 69 160 L 163 160" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="68.4" y="140" width="95.2" height="16" rx="3" class="c-mask"/>
+          <text x="116" y="150" class="t-backend" font-size="9" text-anchor="middle">Create (Seeds×3)</text>
+        </g>
+        <text data-detail="fine" x="81" y="178" class="t-dim" font-size="7">部署时触发</text>
+        </g>
+
+        <g data-edge-from="crfn" data-edge-to="ddb" data-edge-label="清旧 → 写 3 条" data-edge-key="1" data-edge-id="m2">
+          <path data-composition-edge-from="crfn" data-composition-edge-to="ddb" data-composition-edge-id="m2" data-composition-points="177,204;271,204" d="M 177 204 L 271 204" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="181.6" y="184" width="84.8" height="16" rx="3" class="c-mask"/>
+          <text x="224" y="194" class="t-backend" font-size="9" text-anchor="middle">清旧 → 写 3 条</text>
+        </g>
+        <text data-detail="fine" x="189" y="222" class="t-dim" font-size="7">A-001/002/003</text>
+        </g>
+
+        <g data-edge-from="crfn" data-edge-to="cfn" data-edge-label="PUT ResponseURL ✅" data-edge-key="2" data-edge-id="m3">
+          <path data-composition-edge-from="crfn" data-composition-edge-to="cfn" data-composition-edge-id="m3" data-composition-points="163,248;69,248" d="M 163 248 L 69 248" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="63.199999999999996" y="228" width="105.60000000000001" height="16" rx="3" class="c-mask"/>
+          <text x="116" y="238" class="t-muted" font-size="9" text-anchor="middle">PUT ResponseURL ✅</text>
+        </g>
+        <text data-detail="fine" x="81" y="266" class="t-dim" font-size="7">物理 ID ho06-seeds-v1</text>
+        </g>
+
+        <g data-edge-from="cfn" data-edge-to="crfn" data-edge-label="Update (Seeds×4)" data-edge-key="3" data-edge-id="m4">
+          <path data-composition-edge-from="cfn" data-composition-edge-to="crfn" data-composition-edge-id="m4" data-composition-points="69,292;163,292" d="M 69 292 L 163 292" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="68.4" y="272" width="95.2" height="16" rx="3" class="c-mask"/>
+          <text x="116" y="282" class="t-backend" font-size="9" text-anchor="middle">Update (Seeds×4)</text>
+        </g>
+        <text data-detail="fine" x="81" y="310" class="t-dim" font-size="7">-c extra=1 改属性</text>
+        </g>
+
+        <g data-edge-from="crfn" data-edge-to="ddb" data-edge-label="全量重写 → 4 条" data-edge-key="4" data-edge-id="m5">
+          <path data-composition-edge-from="crfn" data-composition-edge-to="ddb" data-composition-edge-id="m5" data-composition-points="177,336;271,336" d="M 177 336 L 271 336" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="179" y="316" width="90" height="16" rx="3" class="c-mask"/>
+          <text x="224" y="326" class="t-backend" font-size="9" text-anchor="middle">全量重写 → 4 条</text>
+        </g>
+        <text data-detail="fine" x="189" y="354" class="t-dim" font-size="7">新增 A-004</text>
+        </g>
+
+        <g data-edge-from="crfn" data-edge-to="cfn" data-edge-label="ID 稳定 = Update 非 Replace" data-edge-key="5" data-edge-id="m6">
+          <path data-composition-edge-from="crfn" data-composition-edge-to="cfn" data-composition-edge-id="m6" data-composition-points="163,380;69,380" d="M 163 380 L 69 380" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="39.8" y="360" width="152.4" height="16" rx="3" class="c-mask"/>
+          <text x="116" y="370" class="t-muted" font-size="9" text-anchor="middle">ID 稳定 = Update 非 Replace</text>
+        </g>
+        </g>
+
+        <g data-edge-from="cfn" data-edge-to="crfn" data-edge-label="Delete" data-edge-key="6" data-edge-id="m7">
+          <path data-composition-edge-from="cfn" data-composition-edge-to="crfn" data-composition-edge-id="m7" data-composition-points="69,424;163,424" d="M 69 424 L 163 424" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="94.4" y="404" width="43.2" height="16" rx="3" class="c-mask"/>
+          <text x="116" y="414" class="t-backend" font-size="9" text-anchor="middle">Delete</text>
+        </g>
+        <text data-detail="fine" x="81" y="442" class="t-dim" font-size="7">destroy 触发</text>
+        </g>
+
+        <g data-edge-from="crfn" data-edge-to="ddb" data-edge-label="清空种子" data-edge-key="7" data-edge-id="m8">
+          <path data-composition-edge-from="crfn" data-composition-edge-to="ddb" data-composition-edge-id="m8" data-composition-points="177,468;271,468" d="M 177 468 L 271 468" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="197.2" y="448" width="53.6" height="16" rx="3" class="c-mask"/>
+          <text x="224" y="458" class="t-backend" font-size="9" text-anchor="middle">清空种子</text>
+        </g>
+        </g>
+
+        <g data-edge-from="crfn" data-edge-to="cfn" data-edge-label="SUCCESS → 零孤儿" data-edge-key="8" data-edge-id="m9">
+          <path data-composition-edge-from="crfn" data-composition-edge-to="cfn" data-composition-edge-id="m9" data-composition-points="163,512;69,512" d="M 163 512 L 69 512" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="68.4" y="492" width="95.2" height="16" rx="3" class="c-mask"/>
+          <text x="116" y="502" class="t-muted" font-size="9" text-anchor="middle">SUCCESS → 零孤儿</text>
+        </g>
+        </g>
+
+        <!-- Segment Labels -->
+
+
+        <!-- Participants -->
+        <g id="node-cfn" data-node-id="cfn" data-node-label="CFN 引擎" tabindex="0" role="button" aria-label="聚焦CFN 引擎，时序参与者" aria-pressed="false" data-node-kind="cloud" data-node-context="时序参与者">
+          <title>CFN 引擎 · 时序参与者</title>
+          <rect x="19" y="72" width="86" height="54" rx="6" class="c-mask"/>
+          <rect x="19" y="72" width="86" height="54" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(25 78) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" x="62" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">CFN 引擎</text>
+        </g>
+
+        <g id="node-crfn" data-node-id="crfn" data-node-label="ho06-cr-fn" tabindex="0" role="button" aria-label="聚焦ho06-cr-fn，时序参与者" aria-pressed="false" data-node-kind="backend" data-node-context="时序参与者">
+          <title>ho06-cr-fn · 时序参与者</title>
+          <rect x="127" y="72" width="86" height="54" rx="6" class="c-mask"/>
+          <rect x="127" y="72" width="86" height="54" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(133 78) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" x="170" y="94" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho06-cr-fn</text>
+        </g>
+
+        <g id="node-ddb" data-node-id="ddb" data-node-label="ho06-seeds 表" tabindex="0" role="button" aria-label="聚焦ho06-seeds 表，时序参与者" aria-pressed="false" data-node-kind="database" data-node-context="时序参与者">
+          <title>ho06-seeds 表 · 时序参与者</title>
+          <rect x="235" y="72" width="86" height="54" rx="6" class="c-mask"/>
+          <rect x="235" y="72" width="86" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(241 78) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" x="278" y="94" class="t-primary" font-size="10" font-weight="600" text-anchor="middle">ho06-seeds 表</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="">
+          <text x="40" y="566" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="return" data-legend-x="40" data-legend-baseline="586" data-legend-width="63">
+            <path d="M 40 583 L 74 583" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+            <text x="83" y="586" class="t-muted" font-size="10" font-weight="500">返回</text>
+          </g>
+          <g data-legend-semantic-kind="default" data-legend-x="125" data-legend-baseline="586" data-legend-width="83">
+            <path d="M 125 583 L 159 583" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="168" y="586" class="t-muted" font-size="10" font-weight="500">默认消息</text>
+          </g>
+        </g>
+      </svg>

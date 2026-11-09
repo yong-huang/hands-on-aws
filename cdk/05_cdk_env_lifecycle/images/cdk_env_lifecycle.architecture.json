@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "一张图纸，两个环境，两种生命周期",
+    "output": "cdk_env_lifecycle.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "ctx",
+      "type": "external",
+      "label": "-c env=dev|prod",
+      "sublabel": "合成期分支（选图纸）",
+      "pos": [80, 220],
+      "size": [190, 62]
+    },
+    {
+      "id": "dev",
+      "type": "cloud",
+      "label": "ho05-dev-stack",
+      "sublabel": "1 队列 · PAY_PER_REQUEST · 全 DESTROY",
+      "pos": [400, 90],
+      "size": [250, 62]
+    },
+    {
+      "id": "prod",
+      "type": "cloud",
+      "label": "ho05-prod-stack",
+      "sublabel": "3 队列+DLQ · PROVISIONED · 版本化",
+      "pos": [400, 320],
+      "size": [250, 62]
+    },
+    {
+      "id": "param",
+      "type": "backend",
+      "label": "--parameters BatchSize",
+      "sublabel": "部署期填栏（50 → 77）",
+      "pos": [740, 200],
+      "size": [220, 58]
+    },
+    {
+      "id": "retain",
+      "type": "security",
+      "label": "表 + 桶 RETAIN",
+      "sublabel": "destroy 后原地存活",
+      "pos": [740, 380],
+      "size": [220, 62],
+      "tag": "人工收尾"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566",
+      "wraps": ["dev", "prod", "retain"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "ctx",
+      "to": "dev"
+    },
+    {
+      "id": "c2",
+      "from": "ctx",
+      "to": "prod",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c3",
+      "from": "prod",
+      "to": "param"
+    },
+    {
+      "id": "c4",
+      "from": "prod",
+      "to": "retain"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两层旋钮",
+      "items": [
+        "context 改形状（选图纸）",
+        "parameters 填数值（填栏）",
+        "改值要过 diff 的用 context"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "dev destroy 一网打尽",
+        "prod destroy 资产存活",
+        "50→77 形状不变"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "context 改不动 CfnParameter",
+        "None 被当对象键造删除标记",
+        "版本化桶要清到删除标记"
+      ]
+    }
+  ]
+}

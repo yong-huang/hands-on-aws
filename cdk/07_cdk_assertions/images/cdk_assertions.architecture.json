@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "断言测试：图纸审校，不进工地",
+    "output": "cdk_assertions.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "lib",
+      "type": "backend",
+      "label": "构造库（cdk/02 复用）",
+      "sublabel": "inject 开关：no_encryption / bad_runtime",
+      "pos": [70, 210],
+      "size": [230, 66]
+    },
+    {
+      "id": "tpl",
+      "type": "backend",
+      "label": "Template.from_stack",
+      "sublabel": "秒级合成，不触云",
+      "pos": [420, 210],
+      "size": [190, 62]
+    },
+    {
+      "id": "green",
+      "type": "security",
+      "label": "green 12 断言",
+      "sublabel": "形态/数量/反面/导出",
+      "pos": [720, 90],
+      "size": [200, 60],
+      "tag": "12 passed"
+    },
+    {
+      "id": "red",
+      "type": "external",
+      "label": "red 抓红 ×2",
+      "sublabel": "注入后跑正确断言",
+      "pos": [720, 340],
+      "size": [200, 60],
+      "tag": "各 1 failed"
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "lib",
+      "to": "tpl"
+    },
+    {
+      "id": "c2",
+      "from": "tpl",
+      "to": "green"
+    },
+    {
+      "id": "c3",
+      "from": "tpl",
+      "to": "red"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "断言家族",
+      "items": [
+        "has_resource_properties 存在即匹配",
+        "resource_count_is 数量",
+        "absent 反面：count=0"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "green 12 passed / 1.4s",
+        "no_encryption 被抓红",
+        "bad_runtime 被抓红"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "默认值不进模板",
+        "find_outputs 要给 ID",
+        "NODEJS_20_X 无下划线"
+      ]
+    }
+  ]
+}

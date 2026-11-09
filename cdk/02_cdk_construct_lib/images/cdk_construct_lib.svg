@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1060 450" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">构造库：一份代码，两条管道</title>
+        <desc id="archify-diagram-description">由 Archify 生成的架构图。</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Boundaries (behind everything) -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="LocalStack :4566" x="760" y="60" width="260" height="322" rx="12" class="c-region" stroke-width="1"/>
+
+        <!-- Connection paths (before components for correct z-order) -->
+        <path data-edge-from="lib" data-edge-to="alpha" data-edge-key="0" data-edge-id="c1" data-composition-points="310,258;390,258;390,121;470,121" d="M 310 258 L 382 258 Q 390 258 390 250 L 390 129 Q 390 121 398 121 L 470 121" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="lib" data-edge-to="beta" data-edge-key="1" data-edge-id="c2" data-composition-points="310,272;390,272;390,331;470,331" d="M 310 272 L 382 272 Q 390 272 390 280 L 390 323 Q 390 331 398 331 L 470 331" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="alpha" data-edge-to="a-res" data-edge-key="2" data-edge-id="c3" data-composition-points="680,121;790,121" d="M 680 121 L 790 121" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="beta" data-edge-to="b-res" data-edge-key="3" data-edge-id="c4" data-composition-points="680,331;790,331" d="M 680 331 L 790 331" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="a-res" data-edge-to="pipe" data-edge-key="4" data-edge-id="c5" data-composition-points="890,152;890,195" d="M 890 152 L 890 195" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="b-res" data-edge-to="pipe" data-edge-key="5" data-edge-id="c6" data-composition-points="890,300;890,253" d="M 890 300 L 890 253" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Components -->
+        <g id="node-lib" data-node-id="lib" data-node-label="OrderPipelineConstruct" tabindex="0" role="button" aria-label="聚焦OrderPipelineConstruct，Props 校验 + 默认值 + 命名隔离, 架构组件" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Props 校验 + 默认值 + 命名隔离" data-node-tag="order_pipeline.py" data-node-context="架构组件">
+          <title>OrderPipelineConstruct · Props 校验 + 默认值 + 命名隔离 · 架构组件 · order_pipeline.py</title>
+          <rect x="80" y="230" width="230" height="70" rx="6" class="c-mask"/>
+          <rect x="80" y="230" width="230" height="70" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(86 236) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="195" y="263" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">OrderPipelineConstruct</text>
+        <text data-detail="context" x="195" y="279" class="t-muted" font-size="9" text-anchor="middle">Props 校验 + 默认值 + 命名隔离</text>
+        <text data-detail="fine" x="195" y="292" class="t-backend" font-size="7" text-anchor="middle">order_pipeline.py</text>
+        </g>
+
+        <g id="node-alpha" data-node-id="alpha" data-node-label="AlphaStack（全默认）" tabindex="0" role="button" aria-label="聚焦AlphaStack（全默认），超时 30s · DLQ 阈值 3, 架构组件" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="超时 30s · DLQ 阈值 3" data-node-context="架构组件">
+          <title>AlphaStack（全默认） · 超时 30s · DLQ 阈值 3 · 架构组件</title>
+          <rect x="470" y="90" width="210" height="62" rx="6" class="c-mask"/>
+          <rect x="470" y="90" width="210" height="62" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(476 96) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="575" y="119" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">AlphaStack（全默认）</text>
+        <text data-detail="context" x="575" y="135" class="t-muted" font-size="9" text-anchor="middle">超时 30s · DLQ 阈值 3</text>
+        </g>
+
+        <g id="node-beta" data-node-id="beta" data-node-label="BetaStack（覆盖默认）" tabindex="0" role="button" aria-label="聚焦BetaStack（覆盖默认），超时 60s · DLQ 阈值 5, 架构组件" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="超时 60s · DLQ 阈值 5" data-node-context="架构组件">
+          <title>BetaStack（覆盖默认） · 超时 60s · DLQ 阈值 5 · 架构组件</title>
+          <rect x="470" y="300" width="210" height="62" rx="6" class="c-mask"/>
+          <rect x="470" y="300" width="210" height="62" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(476 306) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="575" y="329" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">BetaStack（覆盖默认）</text>
+        <text data-detail="context" x="575" y="345" class="t-muted" font-size="9" text-anchor="middle">超时 60s · DLQ 阈值 5</text>
+        </g>
+
+        <g id="node-a-res" data-node-id="a-res" data-node-label="ho02-alpha-*" tabindex="0" role="button" aria-label="聚焦ho02-alpha-*，桶+队列+DLQ+表+函数, LocalStack :4566" aria-pressed="false" data-node-kind="database" data-node-sublabel="桶+队列+DLQ+表+函数" data-node-tag="9 资源" data-node-context="LocalStack :4566">
+          <title>ho02-alpha-* · 桶+队列+DLQ+表+函数 · LocalStack :4566 · 9 资源</title>
+          <rect x="790" y="90" width="200" height="62" rx="6" class="c-mask"/>
+          <rect x="790" y="90" width="200" height="62" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(796 96) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="890" y="119" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho02-alpha-*</text>
+        <text data-detail="context" x="890" y="135" class="t-muted" font-size="9" text-anchor="middle">桶+队列+DLQ+表+函数</text>
+        <text data-detail="fine" x="890" y="144" class="t-database" font-size="7" text-anchor="middle">9 资源</text>
+        </g>
+
+        <g id="node-b-res" data-node-id="b-res" data-node-label="ho02-beta-*" tabindex="0" role="button" aria-label="聚焦ho02-beta-*，桶+队列+DLQ+表+函数, LocalStack :4566" aria-pressed="false" data-node-kind="database" data-node-sublabel="桶+队列+DLQ+表+函数" data-node-tag="9 资源" data-node-context="LocalStack :4566">
+          <title>ho02-beta-* · 桶+队列+DLQ+表+函数 · LocalStack :4566 · 9 资源</title>
+          <rect x="790" y="300" width="200" height="62" rx="6" class="c-mask"/>
+          <rect x="790" y="300" width="200" height="62" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(796 306) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="890" y="329" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho02-beta-*</text>
+        <text data-detail="context" x="890" y="345" class="t-muted" font-size="9" text-anchor="middle">桶+队列+DLQ+表+函数</text>
+        <text data-detail="fine" x="890" y="354" class="t-database" font-size="7" text-anchor="middle">9 资源</text>
+        </g>
+
+        <g id="node-pipe" data-node-id="pipe" data-node-label="SQS → Lambda → DDB" tabindex="0" role="button" aria-label="聚焦SQS → Lambda → DDB，构造内部挂接, LocalStack :4566" aria-pressed="false" data-node-kind="messagebus" data-node-sublabel="构造内部挂接" data-node-context="LocalStack :4566">
+          <title>SQS → Lambda → DDB · 构造内部挂接 · LocalStack :4566</title>
+          <rect x="790" y="195" width="200" height="58" rx="6" class="c-mask"/>
+          <rect x="790" y="195" width="200" height="58" rx="6" class="c-messagebus" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="messagebus" class="semantic-sigil s-messagebus" transform="translate(796 201) scale(0.6875)">
+            <path d="M2.5 4.5h11M2.5 8h11M2.5 11.5h11"/>
+            <circle cx="5" cy="4.5" r="1" class="sigil-fill"/>
+            <circle cx="10.5" cy="8" r="1" class="sigil-fill"/>
+            <circle cx="7" cy="11.5" r="1" class="sigil-fill"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="890" y="222" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">SQS → Lambda → DDB</text>
+        <text data-detail="context" x="890" y="238" class="t-muted" font-size="9" text-anchor="middle">构造内部挂接</text>
+        </g>
+
+        <!-- Connection labels -->
+
+
+
+
+
+
+
+        <!-- Boundary labels (foreground masks keep routes out of titles) -->
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="LocalStack :4566">
+          <rect data-graph-role="structural-frame-label-mask" x="764" y="70" width="96.39999999999999" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="768" y="83" class="t-cloud" font-size="9" font-weight="600">LocalStack :4566</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="414" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="后端" data-legend-x="40" data-legend-baseline="434" data-legend-width="63">
+            <rect x="40" y="425" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
+            <text x="62" y="434" class="t-muted" font-size="10" font-weight="500">后端</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="数据库" data-legend-x="125" data-legend-baseline="434" data-legend-width="73">
+            <rect x="125" y="425" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
+            <text x="147" y="434" class="t-muted" font-size="10" font-weight="500">数据库</text>
+          </g>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="云服务" data-legend-x="220" data-legend-baseline="434" data-legend-width="73">
+            <rect x="220" y="425" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
+            <text x="242" y="434" class="t-muted" font-size="10" font-weight="500">云服务</text>
+          </g>
+          <g data-legend-semantic-kind="messagebus" data-legend-kind="messagebus" data-legend-label="消息总线" data-legend-x="315" data-legend-baseline="434" data-legend-width="83">
+            <rect x="315" y="425" width="16" height="10" rx="2.5" class="c-messagebus" stroke-width="1"/>
+            <text x="337" y="434" class="t-muted" font-size="10" font-weight="500">消息总线</text>
+          </g>
+        </g>
+      </svg>

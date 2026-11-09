@@ -1,0 +1,133 @@
+{
+ "Resources": {
+  "BadBucketF16C267E": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "BucketName": "ho03-bad-bucket",
+    "Tags": [
+     {
+      "Key": "lab",
+      "Value": "ho03"
+     },
+     {
+      "Key": "owner",
+      "Value": "platform-team"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho03-bad-stack/BadBucket/Resource"
+   }
+  },
+  "RawBucket": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "BucketName": "ho03-bad-raw",
+    "Tags": [
+     {
+      "Key": "lab",
+      "Value": "ho03"
+     },
+     {
+      "Key": "owner",
+      "Value": "platform-team"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho03-bad-stack/RawBucket"
+   }
+  },
+  "Operator41AE602D": {
+   "Type": "AWS::IAM::User",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "lab",
+      "Value": "ho03"
+     },
+     {
+      "Key": "owner",
+      "Value": "platform-team"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho03-bad-stack/Operator/Resource"
+   }
+  },
+  "WildcardPolicyA6D062CA": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:GetObject",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "BadBucketF16C267E",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "WildcardPolicyA6D062CA",
+    "Users": [
+     {
+      "Ref": "Operator41AE602D"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho03-bad-stack/WildcardPolicy/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXIQQ6CMBCF4bOwb0ehiZGtHgCicW1qLXEsFMJMQ0jTu5va1f+910BzOsOx0htJ83ZyxBfEO2vjhN7oGUlBvATjLIvr4IuSQD1BfJBd8/lvP49o9jyLUsruAi+Bk+h3/sz+oKBW0FZfQpRr8IyThVvpD9SexoyIAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho03-bad-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "BucketName": {
+   "Value": {
+    "Ref": "BadBucketF16C267E"
+   }
+  }
+ }
+}

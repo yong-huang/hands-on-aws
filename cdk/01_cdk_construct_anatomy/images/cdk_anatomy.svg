@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1360 496" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">CDK 构造解剖：一张桶的三种造法</title>
+        <desc id="archify-diagram-description">由 Archify 生成的架构图。</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Boundaries (behind everything) -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="LocalStack :4566（无 bootstrap，禁资产）" x="850" y="90" width="470" height="324" rx="12" class="c-region" stroke-width="1"/>
+
+        <!-- Connection paths (before components for correct z-order) -->
+        <path data-edge-from="app" data-edge-to="synth" data-edge-key="0" data-edge-id="s1" data-composition-points="240,252;340,252" d="M 240 252 L 340 252" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="synth" data-edge-to="l1" data-edge-key="1" data-edge-id="s2" data-composition-points="520,236;570,236;570,99;620,99" d="M 520 236 L 562 236 Q 570 236 570 228 L 570 107 Q 570 99 578 99 L 620 99" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="synth" data-edge-to="l2" data-edge-key="2" data-edge-id="s3" data-composition-points="520,246.66666666666666;570,246.66666666666666;570,199;620,199" d="M 520 246.66666666666666 L 562 246.66666666666666 Q 570 246.66666666666666 570 238.66666666666666 L 570 207 Q 570 199 578 199 L 620 199" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="synth" data-edge-to="l2x" data-edge-key="3" data-edge-id="s4" data-composition-points="520,257.3333333333333;570,257.3333333333333;570,299;620,299" d="M 520 257.3333333333333 L 562 257.3333333333333 Q 570 257.3333333333333 570 265.3333333333333 L 570 291 Q 570 299 578 299 L 620 299" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="synth" data-edge-to="l3" data-edge-key="4" data-edge-id="s5" data-composition-points="520,268;570,268;570,399;620,399" d="M 520 268 L 562 268 Q 570 268 570 276 L 570 391 Q 570 399 578 399 L 620 399" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="l1" data-edge-to="cfn" data-edge-key="5" data-edge-id="d1" data-composition-points="800,99;840,99;840,258;880,258" d="M 800 99 L 832 99 Q 840 99 840 107 L 840 250 Q 840 258 848 258 L 880 258" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="l2" data-edge-to="cfn" data-edge-key="6" data-edge-id="d2" data-composition-points="800,199;840,199;840,272;880,272" d="M 800 199 L 832 199 Q 840 199 840 207 L 840 264 Q 840 272 848 272 L 880 272" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="l2x" data-edge-to="cfn" data-edge-key="7" data-edge-id="d3" data-composition-points="800,286;880,286" d="M 800 286 L 880 286" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="cfn" data-edge-to="s3l1" data-edge-key="8" data-edge-id="r1" data-composition-points="1030,258;1075,258;1075,147;1120,147" d="M 1030 258 L 1067 258 Q 1075 258 1075 250 L 1075 155 Q 1075 147 1083 147 L 1120 147" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="cfn" data-edge-to="s3l2" data-edge-key="9" data-edge-id="r2" data-composition-points="1030,272;1054,272;1054,288;1096,288;1096,257;1120,257" d="M 1030 272 L 1046 272 Q 1054 272 1054 280 L 1054 280 Q 1054 288 1062 288 L 1088 288 Q 1096 288 1096 280 L 1096 265 Q 1096 257 1104 257 L 1120 257" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="cfn" data-edge-to="s3l2x" data-edge-key="10" data-edge-id="r3" data-composition-points="1030,286;1075,286;1075,367;1120,367" d="M 1030 286 L 1067 286 Q 1075 286 1075 294 L 1075 359 Q 1075 367 1083 367 L 1120 367" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Components -->
+        <g id="node-app" data-node-id="app" data-node-label="app.py（四栈一 App）" tabindex="0" role="button" aria-label="聚焦app.py（四栈一 App），L1 / L2 / L2+escape / L3, 架构组件" aria-pressed="false" data-node-kind="external" data-node-sublabel="L1 / L2 / L2+escape / L3" data-node-context="架构组件">
+          <title>app.py（四栈一 App） · L1 / L2 / L2+escape / L3 · 架构组件</title>
+          <rect x="60" y="220" width="180" height="64" rx="6" class="c-mask"/>
+          <rect x="60" y="220" width="180" height="64" rx="6" class="c-external" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="external" class="semantic-sigil s-external" transform="translate(66 226) scale(0.6875)">
+            <rect x="2.5" y="5" width="8.5" height="8" rx="1.5"/>
+            <path d="M8 2.5h5.5V8M13.5 2.5 7.5 8.5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="150" y="250" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">app.py（四栈一 App）</text>
+        <text data-detail="context" x="150" y="266" class="t-muted" font-size="9" text-anchor="middle">L1 / L2 / L2+escape / L3</text>
+        </g>
+
+        <g id="node-synth" data-node-id="synth" data-node-label="cdklocal synth" tabindex="0" role="button" aria-label="聚焦cdklocal synth，构造树 → 4 份模板归档, 架构组件" aria-pressed="false" data-node-kind="backend" data-node-sublabel="构造树 → 4 份模板归档" data-node-context="架构组件">
+          <title>cdklocal synth · 构造树 → 4 份模板归档 · 架构组件</title>
+          <rect x="340" y="220" width="180" height="64" rx="6" class="c-mask"/>
+          <rect x="340" y="220" width="180" height="64" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(346 226) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="430" y="250" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">cdklocal synth</text>
+        <text data-detail="context" x="430" y="266" class="t-muted" font-size="9" text-anchor="middle">构造树 → 4 份模板归档</text>
+        </g>
+
+        <g id="node-l1" data-node-id="l1" data-node-label="L1 CfnBucket" tabindex="0" role="button" aria-label="聚焦L1 CfnBucket，只写 BucketName, 架构组件" aria-pressed="false" data-node-kind="backend" data-node-sublabel="只写 BucketName" data-node-tag="1 属性" data-node-context="架构组件">
+          <title>L1 CfnBucket · 只写 BucketName · 架构组件 · 1 属性</title>
+          <rect x="620" y="70" width="180" height="58" rx="6" class="c-mask"/>
+          <rect x="620" y="70" width="180" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(626 76) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="710" y="97" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">L1 CfnBucket</text>
+        <text data-detail="context" x="710" y="113" class="t-muted" font-size="9" text-anchor="middle">只写 BucketName</text>
+        <text data-detail="fine" x="710" y="120" class="t-backend" font-size="7" text-anchor="middle">1 属性</text>
+        </g>
+
+        <g id="node-l2" data-node-id="l2" data-node-label="L2 s3.Bucket" tabindex="0" role="button" aria-label="聚焦L2 s3.Bucket，注入 AES256 加密, 架构组件" aria-pressed="false" data-node-kind="backend" data-node-sublabel="注入 AES256 加密" data-node-tag="2 属性 + 散列 ID" data-node-context="架构组件">
+          <title>L2 s3.Bucket · 注入 AES256 加密 · 架构组件 · 2 属性 + 散列 ID</title>
+          <rect x="620" y="170" width="180" height="58" rx="6" class="c-mask"/>
+          <rect x="620" y="170" width="180" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(626 176) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="710" y="197" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">L2 s3.Bucket</text>
+        <text data-detail="context" x="710" y="213" class="t-muted" font-size="9" text-anchor="middle">注入 AES256 加密</text>
+        <text data-detail="fine" x="710" y="220" class="t-backend" font-size="7" text-anchor="middle">2 属性 + 散列 ID</text>
+        </g>
+
+        <g id="node-l2x" data-node-id="l2x" data-node-label="L2 + 3×addOverride" tabindex="0" role="button" aria-label="聚焦L2 + 3×addOverride，版本化/aws:kms/PAB, 架构组件" aria-pressed="false" data-node-kind="backend" data-node-sublabel="版本化/aws:kms/PAB" data-node-tag="4 属性" data-node-context="架构组件">
+          <title>L2 + 3×addOverride · 版本化/aws:kms/PAB · 架构组件 · 4 属性</title>
+          <rect x="620" y="270" width="180" height="58" rx="6" class="c-mask"/>
+          <rect x="620" y="270" width="180" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(626 276) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="710" y="297" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">L2 + 3×addOverride</text>
+        <text data-detail="context" x="710" y="313" class="t-muted" font-size="9" text-anchor="middle">版本化/aws:kms/PAB</text>
+        <text data-detail="fine" x="710" y="320" class="t-backend" font-size="7" text-anchor="middle">4 属性</text>
+        </g>
+
+        <g id="node-l3" data-node-id="l3" data-node-label="L3 cloudtrail.Trail" tabindex="0" role="button" aria-label="聚焦L3 cloudtrail.Trail，1 声明 → 3 资源, 架构组件" aria-pressed="false" data-node-kind="backend" data-node-sublabel="1 声明 → 3 资源" data-node-tag="仅 synth 对比" data-node-context="架构组件">
+          <title>L3 cloudtrail.Trail · 1 声明 → 3 资源 · 架构组件 · 仅 synth 对比</title>
+          <rect x="620" y="370" width="180" height="58" rx="6" class="c-mask"/>
+          <rect x="620" y="370" width="180" height="58" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(626 376) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="710" y="397" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">L3 cloudtrail.Trail</text>
+        <text data-detail="context" x="710" y="413" class="t-muted" font-size="9" text-anchor="middle">1 声明 → 3 资源</text>
+        <text data-detail="fine" x="710" y="420" class="t-backend" font-size="7" text-anchor="middle">仅 synth 对比</text>
+        </g>
+
+        <g id="node-cfn" data-node-id="cfn" data-node-label="LocalStack CFN" tabindex="0" role="button" aria-label="聚焦LocalStack CFN，deploy 三栈 / destroy, LocalStack :4566（无 bootstrap，禁资产）" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="deploy 三栈 / destroy" data-node-context="LocalStack :4566（无 bootstrap，禁资产）">
+          <title>LocalStack CFN · deploy 三栈 / destroy · LocalStack :4566（无 bootstrap，禁资产）</title>
+          <rect x="880" y="240" width="150" height="64" rx="6" class="c-mask"/>
+          <rect x="880" y="240" width="150" height="64" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(886 246) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="955" y="270" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">LocalStack CFN</text>
+        <text data-detail="context" x="955" y="286" class="t-muted" font-size="9" text-anchor="middle">deploy 三栈 / destroy</text>
+        </g>
+
+        <g id="node-s3l1" data-node-id="s3l1" data-node-label="ho01-l1-raw" tabindex="0" role="button" aria-label="聚焦ho01-l1-raw，无加密无版本化, LocalStack :4566（无 bootstrap，禁资产）" aria-pressed="false" data-node-kind="database" data-node-sublabel="无加密无版本化" data-node-context="LocalStack :4566（无 bootstrap，禁资产）">
+          <title>ho01-l1-raw · 无加密无版本化 · LocalStack :4566（无 bootstrap，禁资产）</title>
+          <rect x="1120" y="120" width="170" height="54" rx="6" class="c-mask"/>
+          <rect x="1120" y="120" width="170" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1126 126) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="1205" y="145" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho01-l1-raw</text>
+        <text data-detail="context" x="1205" y="161" class="t-muted" font-size="9" text-anchor="middle">无加密无版本化</text>
+        </g>
+
+        <g id="node-s3l2" data-node-id="s3l2" data-node-label="ho01-l2-data" tabindex="0" role="button" aria-label="聚焦ho01-l2-data，线上 AES256, LocalStack :4566（无 bootstrap，禁资产）" aria-pressed="false" data-node-kind="database" data-node-sublabel="线上 AES256" data-node-context="LocalStack :4566（无 bootstrap，禁资产）">
+          <title>ho01-l2-data · 线上 AES256 · LocalStack :4566（无 bootstrap，禁资产）</title>
+          <rect x="1120" y="230" width="170" height="54" rx="6" class="c-mask"/>
+          <rect x="1120" y="230" width="170" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1126 236) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="1205" y="255" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho01-l2-data</text>
+        <text data-detail="context" x="1205" y="271" class="t-muted" font-size="9" text-anchor="middle">线上 AES256</text>
+        </g>
+
+        <g id="node-s3l2x" data-node-id="s3l2x" data-node-label="ho01-l2x-data" tabindex="0" role="button" aria-label="聚焦ho01-l2x-data，Enabled + aws:kms, LocalStack :4566（无 bootstrap，禁资产）" aria-pressed="false" data-node-kind="database" data-node-sublabel="Enabled + aws:kms" data-node-tag="PAB 归一化坑" data-node-context="LocalStack :4566（无 bootstrap，禁资产）">
+          <title>ho01-l2x-data · Enabled + aws:kms · LocalStack :4566（无 bootstrap，禁资产） · PAB 归一化坑</title>
+          <rect x="1120" y="340" width="170" height="54" rx="6" class="c-mask"/>
+          <rect x="1120" y="340" width="170" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(1126 346) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="1205" y="365" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho01-l2x-data</text>
+        <text data-detail="context" x="1205" y="381" class="t-muted" font-size="9" text-anchor="middle">Enabled + aws:kms</text>
+        <text data-detail="fine" x="1205" y="386" class="t-database" font-size="7" text-anchor="middle">PAB 归一化坑</text>
+        </g>
+
+        <!-- Connection labels -->
+
+
+
+
+
+
+
+
+
+
+
+
+        <!-- Boundary labels (foreground masks keep routes out of titles) -->
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="LocalStack :4566（无 bootstrap，禁资产）">
+          <rect data-graph-role="structural-frame-label-mask" x="854" y="100" width="226" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="858" y="113" class="t-cloud" font-size="9" font-weight="600">LocalStack :4566（无 bootstrap，禁资产）</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="460" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="后端" data-legend-x="40" data-legend-baseline="480" data-legend-width="63">
+            <rect x="40" y="471" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
+            <text x="62" y="480" class="t-muted" font-size="10" font-weight="500">后端</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="数据库" data-legend-x="125" data-legend-baseline="480" data-legend-width="73">
+            <rect x="125" y="471" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
+            <text x="147" y="480" class="t-muted" font-size="10" font-weight="500">数据库</text>
+          </g>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="云服务" data-legend-x="220" data-legend-baseline="480" data-legend-width="73">
+            <rect x="220" y="471" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
+            <text x="242" y="480" class="t-muted" font-size="10" font-weight="500">云服务</text>
+          </g>
+          <g data-legend-semantic-kind="external" data-legend-kind="external" data-legend-label="外部系统" data-legend-x="315" data-legend-baseline="480" data-legend-width="83">
+            <rect x="315" y="471" width="16" height="10" rx="2.5" class="c-external" stroke-width="1"/>
+            <text x="337" y="480" class="t-muted" font-size="10" font-weight="500">外部系统</text>
+          </g>
+        </g>
+      </svg>

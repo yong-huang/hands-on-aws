@@ -1,0 +1,155 @@
+{
+ "Resources": {
+  "NsProducerNestedStackNsProducerNestedStackResource7A72AAA6": {
+   "Type": "AWS::CloudFormation::Stack",
+   "Properties": {
+    "TemplateURL": {
+     "Fn::Join": [
+      "",
+      [
+       "https://s3.us-east-1.",
+       {
+        "Ref": "AWS::URLSuffix"
+       },
+       "/",
+       {
+        "Ref": "AssetParameters53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4aS3BucketAEF6A627"
+       },
+       "/",
+       {
+        "Fn::Select": [
+         0,
+         {
+          "Fn::Split": [
+           "||",
+           {
+            "Ref": "AssetParameters53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4aS3VersionKey1CA800BF"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "Fn::Select": [
+         1,
+         {
+          "Fn::Split": [
+           "||",
+           {
+            "Ref": "AssetParameters53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4aS3VersionKey1CA800BF"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     ]
+    }
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho04-parent-stack/NsProducer.NestedStack/NsProducer.NestedStackResource",
+    "aws:asset:path": "ho04parentstackNsProducer979CB5DD.nested.template.json",
+    "aws:asset:property": "TemplateURL"
+   }
+  },
+  "FnServiceRoleB9001A96": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho04-parent-stack/Fn/ServiceRole/Resource"
+   }
+  },
+  "Fn9270CBC0": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Code": {
+     "ZipFile": "import json, os, boto3\nssm = boto3.client('ssm', endpoint_url=f\"http://{os.environ['LOCALSTACK_HOSTNAME']}:4566\",\n                   region_name=os.environ['AWS_REGION'])\ndef handler(event, context):\n    param = os.environ.get('SSM_PARAM')\n    if param:\n        url = ssm.get_parameter(Name=param)['Parameter']['Value']\n        return {'channel': 'ssm-runtime', 'queue_url': url}\n    return {'channel': 'iac-ref', 'queue_url': os.environ['QUEUE_URL']}\n"
+    },
+    "Environment": {
+     "Variables": {
+      "QUEUE_URL": {
+       "Fn::GetAtt": [
+        "NsProducerNestedStackNsProducerNestedStackResource7A72AAA6",
+        "Outputs.ho04parentstackNsProducerNestedQueue4086DD41Ref"
+       ]
+      }
+     }
+    },
+    "FunctionName": "ho04-nested-fn",
+    "Handler": "index.handler",
+    "MemorySize": 256,
+    "Role": {
+     "Fn::GetAtt": [
+      "FnServiceRoleB9001A96",
+      "Arn"
+     ]
+    },
+    "Runtime": "python3.12",
+    "Timeout": 30
+   },
+   "DependsOn": [
+    "FnServiceRoleB9001A96"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "ho04-parent-stack/Fn/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSMzKz0DNQTCwv1k1OydbNyUzSqw4uSUzO1nFOy4MwEsuL46tzEnOTUhL1qt1K85JLMvPzQNIwdq1OZmKuXnVQfk4qSBhE19aCWP6lJQWlJbU6AZUlGfl5+sZ6hsZ6lopZxZmZukWleSWZual6QRAaAB2BBj2IAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho04-parent-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "Channel": {
+   "Value": "nestedstack-getatt"
+  }
+ },
+ "Parameters": {
+  "AssetParameters53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4aS3BucketAEF6A627": {
+   "Type": "String",
+   "Description": "S3 bucket for asset \"53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4a\""
+  },
+  "AssetParameters53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4aS3VersionKey1CA800BF": {
+   "Type": "String",
+   "Description": "S3 key for asset version \"53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4a\""
+  },
+  "AssetParameters53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4aArtifactHashD8B852D2": {
+   "Type": "String",
+   "Description": "Artifact hash for asset \"53e493c44a663c57b5e779a68c8fec9622a74d5def9a6fb4efe0bcceab093b4a\""
+  }
+ }
+}

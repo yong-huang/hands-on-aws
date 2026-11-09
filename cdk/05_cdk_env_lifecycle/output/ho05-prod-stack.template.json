@@ -1,0 +1,164 @@
+{
+ "Parameters": {
+  "BatchSize": {
+   "Type": "Number",
+   "Default": 10,
+   "Description": "队列批处理大小（部署期可调）",
+   "MaxValue": 100,
+   "MinValue": 1
+  }
+ },
+ "Resources": {
+  "Items5C12978B": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "order_id",
+      "AttributeType": "S"
+     }
+    ],
+    "KeySchema": [
+     {
+      "AttributeName": "order_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "ProvisionedThroughput": {
+     "ReadCapacityUnits": 5,
+     "WriteCapacityUnits": 5
+    },
+    "TableName": "ho05-prod-items"
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ho05-prod-stack/Items/Resource"
+   }
+  },
+  "ArchiveDA4CB258": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "BucketName": "ho05-prod-archive",
+    "VersioningConfiguration": {
+     "Status": "Enabled"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "ho05-prod-stack/Archive/Resource"
+   }
+  },
+  "DLQ581697C4": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "QueueName": "ho05-prod-dlq"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-prod-stack/DLQ/Resource"
+   }
+  },
+  "JobsDF1CC2D4": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "QueueName": "ho05-prod-jobs-0",
+    "RedrivePolicy": {
+     "deadLetterTargetArn": {
+      "Fn::GetAtt": [
+       "DLQ581697C4",
+       "Arn"
+      ]
+     },
+     "maxReceiveCount": 3
+    },
+    "VisibilityTimeout": 60
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-prod-stack/Jobs/Resource"
+   }
+  },
+  "Jobs17782CED5": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "QueueName": "ho05-prod-jobs-1",
+    "RedrivePolicy": {
+     "deadLetterTargetArn": {
+      "Fn::GetAtt": [
+       "DLQ581697C4",
+       "Arn"
+      ]
+     },
+     "maxReceiveCount": 3
+    },
+    "VisibilityTimeout": 60
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-prod-stack/Jobs1/Resource"
+   }
+  },
+  "Jobs2021906C7": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "QueueName": "ho05-prod-jobs-2",
+    "RedrivePolicy": {
+     "deadLetterTargetArn": {
+      "Fn::GetAtt": [
+       "DLQ581697C4",
+       "Arn"
+      ]
+     },
+     "maxReceiveCount": 3
+    },
+    "VisibilityTimeout": 60
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-prod-stack/Jobs2/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yWKQQ6CMBAA38K9rAqJ0as+QEDvZilrrEDRbjeENP27oZxmMpkCiuMJ9hnOnOuuzwfTQrh71L26vmyFDkfy5BTO/AzdYnGcuhbCA9uB1iNJVFxCuIjuya9xs6j4xxBqIUlrkhhVQzyJ06ndxH/FR1Ut/j3ZXQmHEs7Zh43JnVhvRoJm4x+9mSrwqQAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho05-prod-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "Env": {
+   "Value": "prod"
+  },
+  "BatchSizeOut": {
+   "Value": {
+    "Ref": "BatchSize"
+   }
+  },
+  "QueueCount": {
+   "Value": "3"
+  },
+  "Table": {
+   "Value": {
+    "Ref": "Items5C12978B"
+   }
+  }
+ }
+}

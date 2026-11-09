@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1092 404" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">CDK deploy 流水线解剖：CLI 没有魔法</title>
+        <desc id="archify-diagram-description">由 Archify 生成的工作流图。</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Swimlanes -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-0" x="40" y="52" width="1036" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="74" class="t-dim" font-size="10" font-weight="600">01 / CLI 自动通道（cdk deploy）</text>
+
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="lane" data-composition-frame-id="lane-1" x="40" y="176" width="1036" height="104" rx="10" class="c-lane" stroke-width="1"/>
+        <text x="54" y="198" class="t-dim" font-size="10" font-weight="600">02 / 手工变更集通道（原生 CFN API）</text>
+
+        <!-- Phase headers -->
+
+
+        <!-- Workflow groups -->
+
+
+        <!-- Edge paths -->
+        <path data-edge-from="synth" data-edge-to="pack" data-edge-key="0" data-edge-id="e1" data-composition-points="216,119;244,119" d="M 216 119 L 244 119" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="pack" data-edge-to="deploy" data-edge-key="1" data-edge-id="e2" data-composition-points="412,119;497.20000000000005,119" d="M 412 119 L 497.20000000000005 119" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="deploy" data-edge-to="cfn" data-edge-key="2" data-edge-id="e3" data-composition-points="581.2,145;581.2,217" d="M 581.2 145 L 581.2 217" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="pack" data-edge-to="changeset" data-edge-label="同一份产物" data-edge-key="3" data-edge-id="e4" data-composition-points="412,119;428,119;428,166;328,166;328,217" d="M 412 119 L 428 119 L 428 166 L 328 166 L 328 217" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="changeset" data-edge-to="cfn" data-edge-label="资产参数亲手填" data-edge-key="4" data-edge-id="e5" data-composition-points="412,243;497.20000000000005,243" d="M 412 243 L 497.20000000000005 243" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="cfn" data-edge-to="res" data-edge-key="5" data-edge-id="e6" data-composition-points="665.2,243;693.2,243" d="M 665.2 243 L 693.2 243" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+
+        <!-- Nodes -->
+        <g id="node-synth" data-node-id="synth" data-node-label="① cdklocal synth" tabindex="0" role="button" aria-label="聚焦① cdklocal synth，构造树 → cdk.out, CLI 自动通道（cdk deploy）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="构造树 → cdk.out" data-node-context="CLI 自动通道（cdk deploy）">
+          <title>① cdklocal synth · 构造树 → cdk.out · CLI 自动通道（cdk deploy）</title>
+          <rect x="48" y="93" width="168" height="52" rx="6" class="c-mask"/>
+          <rect x="48" y="93" width="168" height="52" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(54 99) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="132" y="114" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">① cdklocal synth</text>
+          <text data-detail="context" x="132" y="131" class="t-muted" font-size="8" text-anchor="middle">构造树 → cdk.out</text>
+        </g>
+
+        <g id="node-pack" data-node-id="pack" data-node-label="② 打包上传 + ③ 填参" tabindex="0" role="button" aria-label="聚焦② 打包上传 + ③ 填参，zip → staging 桶, CLI 自动通道（cdk deploy）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="zip → staging 桶" data-node-context="CLI 自动通道（cdk deploy）">
+          <title>② 打包上传 + ③ 填参 · zip → staging 桶 · CLI 自动通道（cdk deploy）</title>
+          <rect x="244" y="93" width="168" height="52" rx="6" class="c-mask"/>
+          <rect x="244" y="93" width="168" height="52" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(250 99) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="328" y="114" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">② 打包上传 + ③ 填参</text>
+          <text data-detail="context" x="328" y="131" class="t-muted" font-size="8" text-anchor="middle">zip → staging 桶</text>
+        </g>
+
+        <g id="node-deploy" data-node-id="deploy" data-node-label="cdk deploy" tabindex="0" role="button" aria-label="聚焦cdk deploy，交给标准 CFN, CLI 自动通道（cdk deploy）" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="交给标准 CFN" data-node-context="CLI 自动通道（cdk deploy）">
+          <title>cdk deploy · 交给标准 CFN · CLI 自动通道（cdk deploy）</title>
+          <rect x="497.20000000000005" y="93" width="168" height="52" rx="6" class="c-mask"/>
+          <rect x="497.20000000000005" y="93" width="168" height="52" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(503.20000000000005 99) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="581.2" y="114" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">cdk deploy</text>
+          <text data-detail="context" x="581.2" y="131" class="t-muted" font-size="8" text-anchor="middle">交给标准 CFN</text>
+        </g>
+
+        <g id="node-changeset" data-node-id="changeset" data-node-label="变更集三步" tabindex="0" role="button" aria-label="聚焦变更集三步，create → describe → execute, 手工变更集通道（原生 CFN API）" aria-pressed="false" data-node-kind="security" data-node-sublabel="create → describe → execute" data-node-context="手工变更集通道（原生 CFN API）">
+          <title>变更集三步 · create → describe → execute · 手工变更集通道（原生 CFN API）</title>
+          <rect x="244" y="217" width="168" height="52" rx="6" class="c-mask"/>
+          <rect x="244" y="217" width="168" height="52" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(250 223) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="328" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">变更集三步</text>
+          <text data-detail="context" x="328" y="255" class="t-muted" font-size="8" text-anchor="middle">create → describe → execute</text>
+        </g>
+
+        <g id="node-cfn" data-node-id="cfn" data-node-label="LocalStack CFN" tabindex="0" role="button" aria-label="聚焦LocalStack CFN，从 staging 桶拉资产, 手工变更集通道（原生 CFN API）" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="从 staging 桶拉资产" data-node-context="手工变更集通道（原生 CFN API）">
+          <title>LocalStack CFN · 从 staging 桶拉资产 · 手工变更集通道（原生 CFN API）</title>
+          <rect x="497.20000000000005" y="217" width="168" height="52" rx="6" class="c-mask"/>
+          <rect x="497.20000000000005" y="217" width="168" height="52" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(503.20000000000005 223) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="581.2" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">LocalStack CFN</text>
+          <text data-detail="context" x="581.2" y="255" class="t-muted" font-size="8" text-anchor="middle">从 staging 桶拉资产</text>
+        </g>
+
+        <g id="node-res" data-node-id="res" data-node-label="双栈资源可用" tabindex="0" role="button" aria-label="聚焦双栈资源可用，桶 + Lambda invoke ✓, 手工变更集通道（原生 CFN API）" aria-pressed="false" data-node-kind="database" data-node-sublabel="桶 + Lambda invoke ✓" data-node-context="手工变更集通道（原生 CFN API）">
+          <title>双栈资源可用 · 桶 + Lambda invoke ✓ · 手工变更集通道（原生 CFN API）</title>
+          <rect x="693.2" y="217" width="168" height="52" rx="6" class="c-mask"/>
+          <rect x="693.2" y="217" width="168" height="52" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(699.2 223) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="777.2" y="238" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">双栈资源可用</text>
+          <text data-detail="context" x="777.2" y="255" class="t-muted" font-size="8" text-anchor="middle">桶 + Lambda invoke ✓</text>
+        </g>
+
+        <!-- Edge labels -->
+
+
+
+        <g data-detail="context" data-edge-from="pack" data-edge-to="changeset" data-edge-label="同一份产物" data-edge-key="3" data-edge-id="e4">
+          <rect x="349" y="146" width="58" height="14" rx="3" class="c-mask"/>
+          <text x="378" y="156" class="t-muted" font-size="8" text-anchor="middle">同一份产物</text>
+        </g>
+        <g data-detail="context" data-edge-from="changeset" data-edge-to="cfn" data-edge-label="资产参数亲手填" data-edge-key="4" data-edge-id="e5">
+          <rect x="416" y="223" width="77.2" height="14" rx="3" class="c-mask"/>
+          <text x="454.6" y="233" class="t-muted" font-size="8" text-anchor="middle">资产参数亲手填</text>
+        </g>
+
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="20" y="304" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="Agent 逻辑" data-legend-x="20" data-legend-baseline="324" data-legend-width="87">
+            <rect x="20" y="316" width="14" height="9" rx="2" class="c-backend" stroke-width="1"/>
+            <text x="42" y="324" class="t-muted" font-size="7.5" font-weight="500">Agent 逻辑</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="策略" data-legend-x="114" data-legend-baseline="324" data-legend-width="61">
+            <rect x="114" y="316" width="14" height="9" rx="2" class="c-security" stroke-width="1"/>
+            <text x="136" y="324" class="t-muted" font-size="7.5" font-weight="500">策略</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="上下文 / 追踪" data-legend-x="182" data-legend-baseline="324" data-legend-width="100">
+            <rect x="182" y="316" width="14" height="9" rx="2" class="c-database" stroke-width="1"/>
+            <text x="204" y="324" class="t-muted" font-size="7.5" font-weight="500">上下文 / 追踪</text>
+          </g>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="云服务" data-legend-x="289" data-legend-baseline="324" data-legend-width="70">
+            <rect x="289" y="316" width="14" height="9" rx="2" class="c-cloud" stroke-width="1"/>
+            <text x="311" y="324" class="t-muted" font-size="7.5" font-weight="500">云服务</text>
+          </g>
+        </g>
+      </svg>

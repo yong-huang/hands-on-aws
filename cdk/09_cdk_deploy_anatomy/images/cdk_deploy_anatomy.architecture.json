@@ -1,0 +1,140 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "CDK deploy 流水线解剖：CLI 没有魔法",
+    "output": "cdk_deploy_anatomy.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "lanes": [
+    {
+      "id": "auto",
+      "label": "CLI 自动通道（cdk deploy）"
+    },
+    {
+      "id": "manual",
+      "label": "手工变更集通道（原生 CFN API）"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "synth",
+      "lane": "auto",
+      "col": 0,
+      "type": "backend",
+      "label": "① cdklocal synth",
+      "sublabel": "构造树 → cdk.out",
+      "width": 168
+    },
+    {
+      "id": "pack",
+      "lane": "auto",
+      "col": 1,
+      "type": "backend",
+      "label": "② 打包上传 + ③ 填参",
+      "sublabel": "zip → staging 桶",
+      "width": 168
+    },
+    {
+      "id": "deploy",
+      "lane": "auto",
+      "col": 2,
+      "type": "cloud",
+      "label": "cdk deploy",
+      "sublabel": "交给标准 CFN",
+      "width": 168
+    },
+    {
+      "id": "changeset",
+      "lane": "manual",
+      "col": 1,
+      "type": "security",
+      "label": "变更集三步",
+      "sublabel": "create → describe → execute",
+      "width": 168
+    },
+    {
+      "id": "cfn",
+      "lane": "manual",
+      "col": 2,
+      "type": "cloud",
+      "label": "LocalStack CFN",
+      "sublabel": "从 staging 桶拉资产",
+      "width": 168
+    },
+    {
+      "id": "res",
+      "lane": "manual",
+      "col": 3,
+      "type": "database",
+      "label": "双栈资源可用",
+      "sublabel": "桶 + Lambda invoke ✓",
+      "width": 168
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "synth",
+      "to": "pack",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "pack",
+      "to": "deploy"
+    },
+    {
+      "id": "e3",
+      "from": "deploy",
+      "to": "cfn"
+    },
+    {
+      "id": "e4",
+      "from": "pack",
+      "to": "changeset",
+      "label": "同一份产物"
+    },
+    {
+      "id": "e5",
+      "from": "changeset",
+      "to": "cfn",
+      "label": "资产参数亲手填"
+    },
+    {
+      "id": "e6",
+      "from": "cfn",
+      "to": "res"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "资产三参数",
+      "items": [
+        "S3Bucket = staging 桶",
+        "S3VersionKey = assets/||hash.zip",
+        "ArtifactHash = 内容散列"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "zip 以散列入桶 ✓",
+        "双栈资产 Lambda invoke ✓",
+        "手工栈需原生 CFN 删除"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "重复 --parameters 只留最后一个",
+        "VersionKey 分隔符是双竖线",
+        "create-change-set 需显式 CREATE"
+      ]
+    }
+  ]
+}

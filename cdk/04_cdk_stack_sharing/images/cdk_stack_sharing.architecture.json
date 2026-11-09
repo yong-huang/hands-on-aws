@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "一个 URL 的三条共享通道",
+    "output": "cdk_stack_sharing.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "producer",
+      "type": "cloud",
+      "label": "ho04-producer-stack",
+      "sublabel": "源队列 ho04-src-queue",
+      "pos": [70, 230],
+      "size": [210, 64],
+      "tag": "Export ×2"
+    },
+    {
+      "id": "ref",
+      "type": "backend",
+      "label": "consumer-ref-stack",
+      "sublabel": "Fn::ImportValue",
+      "pos": [420, 80],
+      "size": [200, 60]
+    },
+    {
+      "id": "nested",
+      "type": "backend",
+      "label": "parent-stack（嵌套）",
+      "sublabel": "Fn::GetAtt Outputs",
+      "pos": [420, 230],
+      "size": [200, 60],
+      "tag": "子模板独立成文件"
+    },
+    {
+      "id": "ssm",
+      "type": "security",
+      "label": "SSM 参数簿",
+      "sublabel": "部署脚本写入 · 运行时读取",
+      "pos": [420, 400],
+      "size": [200, 60],
+      "tag": "ho04-queue-url"
+    },
+    {
+      "id": "fnref",
+      "type": "database",
+      "label": "ho04-ref-fn",
+      "sublabel": "报告 URL ✓",
+      "pos": [720, 80],
+      "size": [180, 54]
+    },
+    {
+      "id": "fnnested",
+      "type": "database",
+      "label": "ho04-nested-fn",
+      "sublabel": "报告嵌套 URL ✓",
+      "pos": [720, 230],
+      "size": [180, 54]
+    },
+    {
+      "id": "fnssm",
+      "type": "database",
+      "label": "ho04-ssm-fn",
+      "sublabel": "get_parameter ✓",
+      "pos": [720, 400],
+      "size": [180, 54]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（已 bootstrap）",
+      "wraps": ["producer", "nested", "ssm", "fnref", "fnnested", "fnssm"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "producer",
+      "to": "ref",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "producer",
+      "to": "ssm",
+      "label": "put-parameter"
+    },
+    {
+      "id": "c3",
+      "from": "nested",
+      "to": "fnnested"
+    },
+    {
+      "id": "c4",
+      "from": "ref",
+      "to": "fnref"
+    },
+    {
+      "id": "c5",
+      "from": "ssm",
+      "to": "fnssm"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三通道",
+      "items": [
+        "属性引用 = 预埋管",
+        "嵌套栈 = 楼中楼图纸",
+        "SSM = 物业登记簿"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "三通道 URL 逐一比对通过",
+        "bootstrap 解锁嵌套资产",
+        "模板里只有参数名没有 URL"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "SSM CFN provider 双写自撞",
+        "get-parameter 斜杠路径回归",
+        "嵌套队列基准别拿错"
+      ]
+    }
+  ]
+}

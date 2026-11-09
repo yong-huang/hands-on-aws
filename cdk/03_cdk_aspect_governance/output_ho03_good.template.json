@@ -1,0 +1,105 @@
+{
+ "Resources": {
+  "GoodBucket28E71CF4": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "BucketName": "ho03-good-bucket",
+    "Tags": [
+     {
+      "Key": "lab",
+      "Value": "ho03"
+     },
+     {
+      "Key": "owner",
+      "Value": "platform-team"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho03-good-stack/GoodBucket/Resource"
+   }
+  },
+  "ReaderF7BF189D": {
+   "Type": "AWS::IAM::User",
+   "Properties": {
+    "Tags": [
+     {
+      "Key": "lab",
+      "Value": "ho03"
+     },
+     {
+      "Key": "owner",
+      "Value": "platform-team"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho03-good-stack/Reader/Resource"
+   }
+  },
+  "ScopedPolicyEB9D0AB0": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:GetObject",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          {
+           "Fn::GetAtt": [
+            "GoodBucket28E71CF4",
+            "Arn"
+           ]
+          },
+          "/*"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "ScopedPolicyEB9D0AB0",
+    "Users": [
+     {
+      "Ref": "ReaderF7BF189D"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho03-good-stack/ScopedPolicy/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yXIQQ6CMBCF4bOwb0ehiZGtHgCicW1qLXEsFMJMQ0jTu5va1f+910BzOsOx0htJ83ZyxBfEO2vjhN7oGUlBvATjLIvr4IuSQD1BfJBd8/lvP49o9jyLUsruAi+Bk+h3/sz+oKBW0FZfQpRr8IyThVvpD9SexoyIAAAA"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho03-good-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "BucketName": {
+   "Value": {
+    "Ref": "GoodBucket28E71CF4"
+   }
+  }
+ }
+}

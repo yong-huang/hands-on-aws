@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "订单平台：十个实验能力的合流",
+    "output": "cdk_order_platform.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "make smoke",
+      "sublabel": "POST /orders · GET /orders/{id}",
+      "pos": [
+        60,
+        210
+      ],
+      "size": [
+        180,
+        62
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "REST API v1（L1）",
+      "sublabel": "POST /orders · GET /orders/{id}",
+      "pos": [
+        350,
+        210
+      ],
+      "size": [
+        190,
+        62
+      ],
+      "tag": "cdk/01 L1 兜底"
+    },
+    {
+      "id": "orderfn",
+      "type": "backend",
+      "label": "order-api Lambda",
+      "sublabel": "校验 ORD- 前缀 → 入队",
+      "pos": [
+        640,
+        90
+      ],
+      "size": [
+        200,
+        60
+      ]
+    },
+    {
+      "id": "queue",
+      "type": "messagebus",
+      "label": "订单队列 + DLQ",
+      "sublabel": "maxReceiveCount=3",
+      "pos": [
+        640,
+        210
+      ],
+      "size": [
+        200,
+        60
+      ]
+    },
+    {
+      "id": "proc",
+      "type": "backend",
+      "label": "processor Lambda",
+      "sublabel": "事件源映射 → 落表",
+      "pos": [
+        640,
+        330
+      ],
+      "size": [
+        200,
+        60
+      ]
+    },
+    {
+      "id": "table",
+      "type": "database",
+      "label": "ho11-<env>-orders",
+      "sublabel": "CR 播种 seed-*",
+      "pos": [
+        930,
+        330
+      ],
+      "size": [
+        200,
+        60
+      ],
+      "tag": "cdk/06 CR"
+    },
+    {
+      "id": "bucket",
+      "type": "database",
+      "label": "ho11-<env>-archive",
+      "sublabel": "prod 版本化 + RETAIN",
+      "pos": [
+        930,
+        210
+      ],
+      "size": [
+        200,
+        60
+      ],
+      "tag": "cdk/05 双环境"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（全资源 platform=ho11 标签 · 合成期合规检查）",
+      "wraps": [
+        "api",
+        "orderfn",
+        "queue",
+        "proc",
+        "table",
+        "bucket"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "f1",
+      "from": "client",
+      "to": "api",
+      "variant": "emphasis",
+      "label": "POST 201 / GET 200"
+    },
+    {
+      "id": "f2",
+      "from": "api",
+      "to": "orderfn"
+    },
+    {
+      "id": "f3",
+      "from": "orderfn",
+      "to": "queue",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "f4",
+      "from": "queue",
+      "to": "proc"
+    },
+    {
+      "id": "f5",
+      "from": "proc",
+      "to": "table",
+      "label": "PROCESSED"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "能力合流",
+      "items": [
+        "cdk/02 构造库组装",
+        "cdk/03 Aspect 打标+合规",
+        "cdk/07 断言 21 条双环境",
+        "GET 直查读模型（api→表）"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "prod pipeline exit=0",
+        "POST→队列→GET 全链路",
+        "RETAIN 收尾零残留"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "集成坑",
+      "items": [
+        "apigwv2 服务不在授权内",
+        "L1 dict 键 camelCase",
+        "RETAIN 资产重建撞名"
+      ]
+    }
+  ]
+}

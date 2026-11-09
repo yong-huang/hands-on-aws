@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 970 548" role="img" lang="zh-CN" aria-labelledby="archify-diagram-title archify-diagram-description" data-preset="classic" data-quality-profile="showcase">
+        <title id="archify-diagram-title">一个 URL 的三条共享通道</title>
+        <desc id="archify-diagram-description">由 Archify 生成的架构图。</desc>
+        <!-- Definitions -->
+        <defs>
+          <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-default" />
+          </marker>
+          <marker id="arrowhead-emphasis" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-emphasis" />
+          </marker>
+          <marker id="arrowhead-security" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-security" />
+          </marker>
+          <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" class="m-dashed" />
+          </marker>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" class="c-grid" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+
+        <!-- Background Grid -->
+        <rect width="100%" height="100%" fill="url(#grid)" />
+
+        <!-- Boundaries (behind everything) -->
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="region" data-composition-frame-id="0" data-composition-frame-label="LocalStack :4566（已 bootstrap）" x="40" y="50" width="890" height="430" rx="12" class="c-region" stroke-width="1"/>
+
+        <!-- Connection paths (before components for correct z-order) -->
+        <path data-edge-from="producer" data-edge-to="ref" data-edge-key="0" data-edge-id="c1" data-composition-points="280,255;350,255;350,110;420,110" d="M 280 255 L 342 255 Q 350 255 350 247 L 350 118 Q 350 110 358 110 L 420 110" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+        <path data-edge-from="producer" data-edge-to="ssm" data-edge-label="put-parameter" data-edge-key="1" data-edge-id="c2" data-composition-points="280,269;350,269;350,430;420,430" d="M 280 269 L 342 269 Q 350 269 350 277 L 350 422 Q 350 430 358 430 L 420 430" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="nested" data-edge-to="fnnested" data-edge-key="2" data-edge-id="c3" data-composition-points="620,260;720,260" d="M 620 260 L 720 260" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="ref" data-edge-to="fnref" data-edge-key="3" data-edge-id="c4" data-composition-points="620,110;720,110" d="M 620 110 L 720 110" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+        <path data-edge-from="ssm" data-edge-to="fnssm" data-edge-key="4" data-edge-id="c5" data-composition-points="620,430;720,430" d="M 620 430 L 720 430" class="a-default" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+
+        <!-- Components -->
+        <g id="node-producer" data-node-id="producer" data-node-label="ho04-producer-stack" tabindex="0" role="button" aria-label="聚焦ho04-producer-stack，源队列 ho04-src-queue, LocalStack :4566（已 bootstrap）" aria-pressed="false" data-node-kind="cloud" data-node-sublabel="源队列 ho04-src-queue" data-node-tag="Export ×2" data-node-context="LocalStack :4566（已 bootstrap）">
+          <title>ho04-producer-stack · 源队列 ho04-src-queue · LocalStack :4566（已 bootstrap） · Export ×2</title>
+          <rect x="70" y="230" width="210" height="64" rx="6" class="c-mask"/>
+          <rect x="70" y="230" width="210" height="64" rx="6" class="c-cloud" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="cloud" class="semantic-sigil s-cloud" transform="translate(76 236) scale(0.6875)">
+            <path d="M4.3 12.5h7.3a2.4 2.4 0 0 0 .2-4.8 4 4 0 0 0-7.5-1.3A3.1 3.1 0 0 0 4.3 12.5Z"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="175" y="260" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho04-producer-stack</text>
+        <text data-detail="context" x="175" y="276" class="t-muted" font-size="9" text-anchor="middle">源队列 ho04-src-queue</text>
+        <text data-detail="fine" x="175" y="286" class="t-cloud" font-size="7" text-anchor="middle">Export ×2</text>
+        </g>
+
+        <g id="node-ref" data-node-id="ref" data-node-label="consumer-ref-stack" tabindex="0" role="button" aria-label="聚焦consumer-ref-stack，Fn::ImportValue, 架构组件" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Fn::ImportValue" data-node-context="架构组件">
+          <title>consumer-ref-stack · Fn::ImportValue · 架构组件</title>
+          <rect x="420" y="80" width="200" height="60" rx="6" class="c-mask"/>
+          <rect x="420" y="80" width="200" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(426 86) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="520" y="108" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">consumer-ref-stack</text>
+        <text data-detail="context" x="520" y="124" class="t-muted" font-size="9" text-anchor="middle">Fn::ImportValue</text>
+        </g>
+
+        <g id="node-nested" data-node-id="nested" data-node-label="parent-stack（嵌套）" tabindex="0" role="button" aria-label="聚焦parent-stack（嵌套），Fn::GetAtt Outputs, LocalStack :4566（已 bootstrap）" aria-pressed="false" data-node-kind="backend" data-node-sublabel="Fn::GetAtt Outputs" data-node-tag="子模板独立成文件" data-node-context="LocalStack :4566（已 bootstrap）">
+          <title>parent-stack（嵌套） · Fn::GetAtt Outputs · LocalStack :4566（已 bootstrap） · 子模板独立成文件</title>
+          <rect x="420" y="230" width="200" height="60" rx="6" class="c-mask"/>
+          <rect x="420" y="230" width="200" height="60" rx="6" class="c-backend" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="backend" class="semantic-sigil s-backend" transform="translate(426 236) scale(0.6875)">
+            <path d="M6 3 3 8l3 5M10 3l3 5-3 5"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="520" y="258" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">parent-stack（嵌套）</text>
+        <text data-detail="context" x="520" y="274" class="t-muted" font-size="9" text-anchor="middle">Fn::GetAtt Outputs</text>
+        <text data-detail="fine" x="520" y="282" class="t-backend" font-size="7" text-anchor="middle">子模板独立成文件</text>
+        </g>
+
+        <g id="node-ssm" data-node-id="ssm" data-node-label="SSM 参数簿" tabindex="0" role="button" aria-label="聚焦SSM 参数簿，部署脚本写入 · 运行时读取, LocalStack :4566（已 bootstrap）" aria-pressed="false" data-node-kind="security" data-node-sublabel="部署脚本写入 · 运行时读取" data-node-tag="ho04-queue-url" data-node-context="LocalStack :4566（已 bootstrap）">
+          <title>SSM 参数簿 · 部署脚本写入 · 运行时读取 · LocalStack :4566（已 bootstrap） · ho04-queue-url</title>
+          <rect x="420" y="400" width="200" height="60" rx="6" class="c-mask"/>
+          <rect x="420" y="400" width="200" height="60" rx="6" class="c-security" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="security" class="semantic-sigil s-security" transform="translate(426 406) scale(0.6875)">
+            <path d="M8 2.2 13 4v3.5c0 3.1-1.8 5.4-5 6.5-3.2-1.1-5-3.4-5-6.5V4Z"/>
+            <path d="m5.8 8 1.5 1.5 3-3"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="520" y="428" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">SSM 参数簿</text>
+        <text data-detail="context" x="520" y="444" class="t-muted" font-size="9" text-anchor="middle">部署脚本写入 · 运行时读取</text>
+        <text data-detail="fine" x="520" y="452" class="t-security" font-size="7" text-anchor="middle">ho04-queue-url</text>
+        </g>
+
+        <g id="node-fnref" data-node-id="fnref" data-node-label="ho04-ref-fn" tabindex="0" role="button" aria-label="聚焦ho04-ref-fn，报告 URL ✓, LocalStack :4566（已 bootstrap）" aria-pressed="false" data-node-kind="database" data-node-sublabel="报告 URL ✓" data-node-context="LocalStack :4566（已 bootstrap）">
+          <title>ho04-ref-fn · 报告 URL ✓ · LocalStack :4566（已 bootstrap）</title>
+          <rect x="720" y="80" width="180" height="54" rx="6" class="c-mask"/>
+          <rect x="720" y="80" width="180" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(726 86) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="810" y="105" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho04-ref-fn</text>
+        <text data-detail="context" x="810" y="121" class="t-muted" font-size="9" text-anchor="middle">报告 URL ✓</text>
+        </g>
+
+        <g id="node-fnnested" data-node-id="fnnested" data-node-label="ho04-nested-fn" tabindex="0" role="button" aria-label="聚焦ho04-nested-fn，报告嵌套 URL ✓, LocalStack :4566（已 bootstrap）" aria-pressed="false" data-node-kind="database" data-node-sublabel="报告嵌套 URL ✓" data-node-context="LocalStack :4566（已 bootstrap）">
+          <title>ho04-nested-fn · 报告嵌套 URL ✓ · LocalStack :4566（已 bootstrap）</title>
+          <rect x="720" y="230" width="180" height="54" rx="6" class="c-mask"/>
+          <rect x="720" y="230" width="180" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(726 236) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="810" y="255" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho04-nested-fn</text>
+        <text data-detail="context" x="810" y="271" class="t-muted" font-size="9" text-anchor="middle">报告嵌套 URL ✓</text>
+        </g>
+
+        <g id="node-fnssm" data-node-id="fnssm" data-node-label="ho04-ssm-fn" tabindex="0" role="button" aria-label="聚焦ho04-ssm-fn，get_parameter ✓, LocalStack :4566（已 bootstrap）" aria-pressed="false" data-node-kind="database" data-node-sublabel="get_parameter ✓" data-node-context="LocalStack :4566（已 bootstrap）">
+          <title>ho04-ssm-fn · get_parameter ✓ · LocalStack :4566（已 bootstrap）</title>
+          <rect x="720" y="400" width="180" height="54" rx="6" class="c-mask"/>
+          <rect x="720" y="400" width="180" height="54" rx="6" class="c-database" stroke-width="1.5"/>
+          <g aria-hidden="true" data-semantic-sigil="database" class="semantic-sigil s-database" transform="translate(726 406) scale(0.6875)">
+            <ellipse cx="8" cy="4" rx="5" ry="2"/>
+            <path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4M3 8c0 1.1 2.2 2 5 2s5-.9 5-2"/>
+          </g>
+          <text data-node-label="" data-detail-anchor="" x="810" y="425" class="t-primary" font-size="11" font-weight="600" text-anchor="middle">ho04-ssm-fn</text>
+        <text data-detail="context" x="810" y="441" class="t-muted" font-size="9" text-anchor="middle">get_parameter ✓</text>
+        </g>
+
+        <!-- Connection labels -->
+
+        <g data-detail="context" data-edge-from="producer" data-edge-to="ssm" data-edge-label="put-parameter" data-edge-key="1" data-edge-id="c2">
+          <rect x="313.8" y="329.5" width="72.4" height="14" rx="3" class="c-mask"/>
+          <text x="350" y="339.5" class="t-muted" font-size="8" text-anchor="middle">put-parameter</text>
+        </g>
+
+
+
+
+        <!-- Boundary labels (foreground masks keep routes out of titles) -->
+        <g data-graph-role="structural-frame-label" data-composition-frame-id="0" data-composition-frame-kind="region" data-composition-frame-label="LocalStack :4566（已 bootstrap）">
+          <rect data-graph-role="structural-frame-label-mask" x="44" y="60" width="182.79999999999998" height="16" rx="3" class="c-mask"/>
+          <text data-boundary-label="" x="48" y="73" class="t-cloud" font-size="9" font-weight="600">LocalStack :4566（已 bootstrap）</text>
+        </g>
+
+        <!-- Legend -->
+        <g data-legend="" data-legend-bridge="">
+          <text x="40" y="512" class="t-primary" font-size="12" font-weight="650">图例</text>
+          <g data-legend-semantic-kind="backend" data-legend-kind="backend" data-legend-label="后端" data-legend-x="40" data-legend-baseline="532" data-legend-width="63">
+            <rect x="40" y="523" width="16" height="10" rx="2.5" class="c-backend" stroke-width="1"/>
+            <text x="62" y="532" class="t-muted" font-size="10" font-weight="500">后端</text>
+          </g>
+          <g data-legend-semantic-kind="database" data-legend-kind="database" data-legend-label="数据库" data-legend-x="125" data-legend-baseline="532" data-legend-width="73">
+            <rect x="125" y="523" width="16" height="10" rx="2.5" class="c-database" stroke-width="1"/>
+            <text x="147" y="532" class="t-muted" font-size="10" font-weight="500">数据库</text>
+          </g>
+          <g data-legend-semantic-kind="cloud" data-legend-kind="cloud" data-legend-label="云服务" data-legend-x="220" data-legend-baseline="532" data-legend-width="73">
+            <rect x="220" y="523" width="16" height="10" rx="2.5" class="c-cloud" stroke-width="1"/>
+            <text x="242" y="532" class="t-muted" font-size="10" font-weight="500">云服务</text>
+          </g>
+          <g data-legend-semantic-kind="security" data-legend-kind="security" data-legend-label="安全" data-legend-x="315" data-legend-baseline="532" data-legend-width="63">
+            <rect x="315" y="523" width="16" height="10" rx="2.5" class="c-security" stroke-width="1"/>
+            <text x="337" y="532" class="t-muted" font-size="10" font-weight="500">安全</text>
+          </g>
+        </g>
+      </svg>

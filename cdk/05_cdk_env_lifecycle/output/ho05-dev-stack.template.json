@@ -1,0 +1,116 @@
+{
+ "Parameters": {
+  "BatchSize": {
+   "Type": "Number",
+   "Default": 10,
+   "Description": "队列批处理大小（部署期可调）",
+   "MaxValue": 100,
+   "MinValue": 1
+  }
+ },
+ "Resources": {
+  "Items5C12978B": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "order_id",
+      "AttributeType": "S"
+     }
+    ],
+    "BillingMode": "PAY_PER_REQUEST",
+    "KeySchema": [
+     {
+      "AttributeName": "order_id",
+      "KeyType": "HASH"
+     }
+    ],
+    "TableName": "ho05-dev-items"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-dev-stack/Items/Resource"
+   }
+  },
+  "ArchiveDA4CB258": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "AES256"
+       }
+      }
+     ]
+    },
+    "BucketName": "ho05-dev-archive"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-dev-stack/Archive/Resource"
+   }
+  },
+  "DLQ581697C4": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "QueueName": "ho05-dev-dlq"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-dev-stack/DLQ/Resource"
+   }
+  },
+  "JobsDF1CC2D4": {
+   "Type": "AWS::SQS::Queue",
+   "Properties": {
+    "QueueName": "ho05-dev-jobs",
+    "RedrivePolicy": {
+     "deadLetterTargetArn": {
+      "Fn::GetAtt": [
+       "DLQ581697C4",
+       "Arn"
+      ]
+     },
+     "maxReceiveCount": 3
+    },
+    "VisibilityTimeout": 15
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "ho05-dev-stack/Jobs/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/yWKQQ6CMBAA38K9rAqJ0as+QEDvZilrrEDRbjeENP27oZxmMpkCiuMJ9hnOnOuuzwfTQrh71L26vmyFDkfy5BTO/AzdYnGcuhbCA9uB1iNJVFxCuIjuya9xs6j4xxBqIUlrkhhVQzyJ06ndxH/FR1Ut/j3ZXQmHEs7Zh43JnVhvRoJm4x+9mSrwqQAAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho05-dev-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "Env": {
+   "Value": "dev"
+  },
+  "BatchSizeOut": {
+   "Value": {
+    "Ref": "BatchSize"
+   }
+  },
+  "QueueCount": {
+   "Value": "1"
+  },
+  "Table": {
+   "Value": {
+    "Ref": "Items5C12978B"
+   }
+  }
+ }
+}

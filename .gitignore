@@ -25,3 +25,6 @@ tmp/
 
 # 视觉评审临时渲染
 *.review.png
+
+# pytest
+.pytest_cache/

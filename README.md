@@ -1,7 +1,7 @@
-# ☁️ hands-on-aws — LocalStack 上的 30 个 AWS 动手实验
+# ☁️ hands-on-aws — LocalStack 上的 AWS 动手实验（基础 30 + CDK 进阶 11）
 
 > 通过 **LocalStack**（单容器模拟 100+ AWS 服务）在本机系统学习 AWS：
-> 全部 30 个实验**不触碰真实 AWS 账户**，每个都有可执行的主脚本
+> 两个系列共 41 个实验（`labs/` 基础 30 · `cdk/` CDK 进阶 11）**不触碰真实 AWS 账户**，每个都有可执行的主脚本
 > （创建 → 观察 → 清理 全生命周期）、编号章节 README、交互式架构图三件套，
 > 并且**全部在本地真机跑通**（含每个模拟器差异的如实记录）。
 
@@ -15,7 +15,7 @@ localstack start -d            # 2026-03 起需要免费账号 token
 # 2. 客户端
 pip3 install boto3 requests cryptography terraform-local   # Python 侧
 brew install awscli                                        # aws CLI
-npm install -g aws-cdk-local aws-cdk                       # CDK（实验 28/30）
+npm install -g aws-cdk-local aws-cdk                       # CDK（labs/28 + cdk/ 系列）
 pip3 install aws-cdk-lib constructs                        # CDK Python 依赖
 pip3 install aws-sam-cli aws-sam-cli-local                 # SAM（实验 29）
 
@@ -98,6 +98,34 @@ bash scripts/load_resources.sh          # check | start | probe | fix-dynamodb
 | [28](labs/28_cdk_stack/) | AWS CDK | Python 画栈、synth/diff/deploy/destroy |
 | [29](labs/29_sam_serverless/) | AWS SAM | 模板化事件源、build/deploy/invoke 一条龙 |
 | [30](labs/30_log_analytics_platform/) | 终极·日志分析平台 | Kinesis→清洗→DDB+S3 归档→告警→指标，1000 条压测 |
+
+## 🎓 系列二：AWS CDK 进阶（cdk/，11 实验）
+
+> 与基础系列平行的独立系列：从「会用实验 28 的一键栈」到「构造库设计 →
+> 栈工程 → IaC 测试 → 流水线交付」。编号 01-11 与清单
+> [docs/cdk.md](docs/cdk.md) 的项目 1-11 一一对应；系列导览见
+> [cdk/README.md](cdk/README.md)。
+
+| 实验 | 主题 | 一句话 |
+|:---|:---|:---|
+| [01](cdk/01_cdk_construct_anatomy/) | CDK 构造解剖 | L1/L2/L3 三层写法逐项对照、escape hatch 三连（含模板≠终态实测） |
+| [02](cdk/02_cdk_construct_lib/) | 自定义 Construct 库 | Props 合成期校验、默认值覆盖、命名隔离，双栈端到端冒烟 |
+| [03](cdk/03_cdk_aspect_governance/) | Aspect 治理 | 标签强制 + 三类违规合成期拦截（L2 未加密/L1 绕过/通配 IAM） |
+| [04](cdk/04_cdk_stack_sharing/) | 跨栈引用三通道 | Export/ImportValue · NestedStack · SSM，URL 逐一比对 + 产物差异表 |
+| [05](cdk/05_cdk_env_lifecycle/) | 多环境与生命周期 | context 形状分支、--parameters 部署期取值、RETAIN 存活与人工收尾 |
+| [06](cdk/06_cdk_custom_resource/) | Custom Resource | CR 三幕（播种/刷新/清场）、物理 ID 稳定走 Update、零孤儿 |
+| [07](cdk/07_cdk_assertions/) | fine-grained 断言测试 | aws_cdk.assertions 12 条合成期断言 + 两种注入抓红（不触云，秒级） |
+| [08](cdk/08_cdk_snapshot_diff/) | 快照与 diff 守门 | 模板钉进仓库、单行改动双红、显式更新快照恢复绿、部署归零 |
+| [09](cdk/09_cdk_deploy_anatomy/) | 部署机制解剖 | bootstrap/资产 staging/AssetParameters，手工变更集部署 CDK 产物 |
+| [10](cdk/10_cdk_local_pipeline/) | ⛓️ 本地 CI 流水线 | make 六阶段（synth→test→diff→deploy→smoke→destroy），注入拦在 test |
+| [11](cdk/11_cdk_order_platform/) | 🏁 综合实战·订单平台 | 十能力合流：L1 API GW + CR 种子 + Aspect + 双环境 + 流水线，prod 全绿 |
+
+```bash
+# CDK 系列快速开始（含资产实验先 bootstrap）
+cdklocal bootstrap aws://000000000000/us-east-1
+cd cdk/01_cdk_construct_anatomy && ./cdk_anatomy.sh
+cd cdk/11_cdk_order_platform && make pipeline APP_ENV=prod
+```
 
 ## 使用方式
 

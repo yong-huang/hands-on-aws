@@ -1,0 +1,115 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "改一行，两道门",
+    "output": "cdk_snapshot_diff.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "lanes": [
+    {
+      "id": "flow",
+      "label": "变更流水线：改一行 → 两道门 → 归零"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "edit",
+      "lane": "flow",
+      "col": 0,
+      "type": "external",
+      "label": "单行改动",
+      "sublabel": "VISIBILITY 30 → 60",
+      "width": 150
+    },
+    {
+      "id": "snap",
+      "lane": "flow",
+      "col": 1,
+      "type": "security",
+      "label": "快照测试门",
+      "sublabel": "逐字段对账",
+      "width": 150
+    },
+    {
+      "id": "review",
+      "lane": "flow",
+      "col": 2,
+      "type": "backend",
+      "label": "显式更新快照",
+      "sublabel": "UPDATE_SNAPSHOT=1",
+      "width": 150
+    },
+    {
+      "id": "diff",
+      "lane": "flow",
+      "col": 3,
+      "type": "security",
+      "label": "diff 守门",
+      "sublabel": "cdk diff 对账线上",
+      "width": 150
+    },
+    {
+      "id": "deploy",
+      "lane": "flow",
+      "col": 4,
+      "type": "cloud",
+      "label": "deploy → 归零",
+      "sublabel": "线上 60s，diff 空",
+      "width": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "edit",
+      "to": "snap",
+      "variant": "emphasis"
+    },
+    {
+      "id": "e2",
+      "from": "snap",
+      "to": "review"
+    },
+    {
+      "id": "e3",
+      "from": "review",
+      "to": "diff"
+    },
+    {
+      "id": "e4",
+      "from": "diff",
+      "to": "deploy"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两道门",
+      "items": [
+        "快照管合并前（图纸审）",
+        "diff 管部署前（对账线上）",
+        "变更行走 stderr 别丢"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "双红：快照 + diff 同时拦",
+        "更新后重跑才算绿",
+        "还原后全部归零"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "Metadata 版本戳会漂",
+        "中断现场要归一",
+        "管道 tail 吞退出码"
+      ]
+    }
+  ]
+}

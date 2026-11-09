@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "CR 三幕：播种、刷新、清场",
+    "output": "cdk_custom_resource.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN",
+    "viewBox": [
+      1360,
+      640
+    ]
+  },
+  "participants": [
+    {
+      "id": "cfn",
+      "label": "CFN 引擎",
+      "type": "cloud"
+    },
+    {
+      "id": "crfn",
+      "label": "ho06-cr-fn",
+      "type": "backend"
+    },
+    {
+      "id": "ddb",
+      "label": "ho06-seeds 表",
+      "type": "database"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "cfn",
+      "to": "crfn",
+      "label": "Create (Seeds×3)",
+      "note": "部署时触发",
+      "y": 160
+    },
+    {
+      "id": "m2",
+      "from": "crfn",
+      "to": "ddb",
+      "label": "清旧 → 写 3 条",
+      "note": "A-001/002/003",
+      "y": 204
+    },
+    {
+      "id": "m3",
+      "from": "crfn",
+      "to": "cfn",
+      "label": "PUT ResponseURL ✅",
+      "note": "物理 ID ho06-seeds-v1",
+      "variant": "return",
+      "y": 248
+    },
+    {
+      "id": "m4",
+      "from": "cfn",
+      "to": "crfn",
+      "label": "Update (Seeds×4)",
+      "note": "-c extra=1 改属性",
+      "y": 292
+    },
+    {
+      "id": "m5",
+      "from": "crfn",
+      "to": "ddb",
+      "label": "全量重写 → 4 条",
+      "note": "新增 A-004",
+      "y": 336
+    },
+    {
+      "id": "m6",
+      "from": "crfn",
+      "to": "cfn",
+      "label": "ID 稳定 = Update 非 Replace",
+      "variant": "return",
+      "y": 380
+    },
+    {
+      "id": "m7",
+      "from": "cfn",
+      "to": "crfn",
+      "label": "Delete",
+      "note": "destroy 触发",
+      "y": 424
+    },
+    {
+      "id": "m8",
+      "from": "crfn",
+      "to": "ddb",
+      "label": "清空种子",
+      "y": 468
+    },
+    {
+      "id": "m9",
+      "from": "crfn",
+      "to": "cfn",
+      "label": "SUCCESS → 零孤儿",
+      "variant": "return",
+      "y": 512
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "协议要点",
+      "items": [
+        "每事件必回执 ResponseURL",
+        "不回执 = 栈卡 IN_PROGRESS",
+        "物理 ID 恒定走 Update"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "3 → 4 条种子刷新",
+        "物理 ID 不变（非 Replace）",
+        "destroy 后零孤儿"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "batch 同键 delete+put 被拒",
+        "handler 崩溃即栈卡死",
+        "管道 tail 吞退出码"
+      ]
+    }
+  ]
+}

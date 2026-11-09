@@ -1,0 +1,127 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "make pipeline：六阶段安检通道",
+    "output": "cdk_local_pipeline.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "lanes": [
+    {
+      "id": "gate",
+      "label": "进云前（合成期拦截）"
+    },
+    {
+      "id": "cloud",
+      "label": "进云后（运行期验证）"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "synth",
+      "lane": "gate",
+      "col": 0,
+      "type": "backend",
+      "label": "① synth",
+      "sublabel": "合成 + 产物检查"
+    },
+    {
+      "id": "test",
+      "lane": "gate",
+      "col": 1,
+      "type": "security",
+      "label": "② test 门",
+      "sublabel": "断言套件抓注入"
+    },
+    {
+      "id": "review",
+      "lane": "gate",
+      "col": 2,
+      "type": "security",
+      "label": "③ diff 审查门",
+      "sublabel": "已部署变更需批准"
+    },
+    {
+      "id": "deploy",
+      "lane": "cloud",
+      "col": 3,
+      "type": "cloud",
+      "label": "④ deploy",
+      "sublabel": "cdklocal deploy"
+    },
+    {
+      "id": "smoke",
+      "lane": "cloud",
+      "col": 4,
+      "type": "messagebus",
+      "label": "⑤ smoke",
+      "sublabel": "SQS→Lambda→DDB"
+    },
+    {
+      "id": "destroy",
+      "lane": "cloud",
+      "col": 5,
+      "type": "external",
+      "label": "⑥ destroy",
+      "sublabel": "清栈 + 残留探查"
+    }
+  ],
+  "edges": [
+    {
+      "id": "p1",
+      "from": "synth",
+      "to": "test",
+      "variant": "emphasis"
+    },
+    {
+      "id": "p2",
+      "from": "test",
+      "to": "review"
+    },
+    {
+      "id": "p3",
+      "from": "review",
+      "to": "deploy"
+    },
+    {
+      "id": "p4",
+      "from": "deploy",
+      "to": "smoke"
+    },
+    {
+      "id": "p5",
+      "from": "smoke",
+      "to": "destroy"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "语义对照",
+      "items": [
+        "Build→synth",
+        "人工关卡→diff-review",
+        "发布后验证→smoke"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "绿流水线六阶段 exit=0",
+        "注入后死在 test",
+        "deploy 未发生（栈不存在）"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "CodeSuite 不在授权内",
+        "$(shell) 解析期执行",
+        "-j 会破坏串行语义"
+      ]
+    }
+  ]
+}

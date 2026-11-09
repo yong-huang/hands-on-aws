@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "构造库：一份代码，两条管道",
+    "output": "cdk_construct_lib.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "lib",
+      "type": "backend",
+      "label": "OrderPipelineConstruct",
+      "sublabel": "Props 校验 + 默认值 + 命名隔离",
+      "pos": [
+        80,
+        230
+      ],
+      "size": [
+        230,
+        70
+      ],
+      "tag": "order_pipeline.py"
+    },
+    {
+      "id": "alpha",
+      "type": "cloud",
+      "label": "AlphaStack（全默认）",
+      "sublabel": "超时 30s · DLQ 阈值 3",
+      "pos": [
+        470,
+        90
+      ],
+      "size": [
+        210,
+        62
+      ]
+    },
+    {
+      "id": "beta",
+      "type": "cloud",
+      "label": "BetaStack（覆盖默认）",
+      "sublabel": "超时 60s · DLQ 阈值 5",
+      "pos": [
+        470,
+        300
+      ],
+      "size": [
+        210,
+        62
+      ]
+    },
+    {
+      "id": "a-res",
+      "type": "database",
+      "label": "ho02-alpha-*",
+      "sublabel": "桶+队列+DLQ+表+函数",
+      "pos": [
+        790,
+        90
+      ],
+      "size": [
+        200,
+        62
+      ],
+      "tag": "9 资源"
+    },
+    {
+      "id": "b-res",
+      "type": "database",
+      "label": "ho02-beta-*",
+      "sublabel": "桶+队列+DLQ+表+函数",
+      "pos": [
+        790,
+        300
+      ],
+      "size": [
+        200,
+        62
+      ],
+      "tag": "9 资源"
+    },
+    {
+      "id": "pipe",
+      "type": "messagebus",
+      "label": "SQS → Lambda → DDB",
+      "sublabel": "构造内部挂接",
+      "pos": [
+        790,
+        195
+      ],
+      "size": [
+        200,
+        58
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566",
+      "wraps": [
+        "a-res",
+        "b-res",
+        "pipe"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "c1",
+      "from": "lib",
+      "to": "alpha",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c2",
+      "from": "lib",
+      "to": "beta",
+      "variant": "emphasis"
+    },
+    {
+      "id": "c3",
+      "from": "alpha",
+      "to": "a-res"
+    },
+    {
+      "id": "c4",
+      "from": "beta",
+      "to": "b-res"
+    },
+    {
+      "id": "c5",
+      "from": "a-res",
+      "to": "pipe"
+    },
+    {
+      "id": "c6",
+      "from": "b-res",
+      "to": "pipe"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "设计四条",
+      "items": [
+        "入参 synth 期校验",
+        "默认值可覆盖",
+        "前缀命名零冲突",
+        "内部挂接不外泄"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "Bad_Name 合成期被拒",
+        "alpha 30s / beta 60s",
+        "A-001/B-001 各落各表"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "Function 无 removal_policy",
+        "事件源映射非即时",
+        "InlineCode 4096 上限"
+      ]
+    }
+  ]
+}

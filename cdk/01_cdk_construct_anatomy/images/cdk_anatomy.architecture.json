@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "CDK 构造解剖：一张桶的三种造法",
+    "output": "cdk_anatomy.html",
+    "quality_profile": "showcase",
+    "locale": "zh-CN"
+  },
+  "components": [
+    {
+      "id": "app",
+      "type": "external",
+      "label": "app.py（四栈一 App）",
+      "sublabel": "L1 / L2 / L2+escape / L3",
+      "pos": [
+        60,
+        220
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "synth",
+      "type": "backend",
+      "label": "cdklocal synth",
+      "sublabel": "构造树 → 4 份模板归档",
+      "pos": [
+        340,
+        220
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "l1",
+      "type": "backend",
+      "label": "L1 CfnBucket",
+      "sublabel": "只写 BucketName",
+      "pos": [
+        620,
+        70
+      ],
+      "size": [
+        180,
+        58
+      ],
+      "tag": "1 属性"
+    },
+    {
+      "id": "l2",
+      "type": "backend",
+      "label": "L2 s3.Bucket",
+      "sublabel": "注入 AES256 加密",
+      "pos": [
+        620,
+        170
+      ],
+      "size": [
+        180,
+        58
+      ],
+      "tag": "2 属性 + 散列 ID"
+    },
+    {
+      "id": "l2x",
+      "type": "backend",
+      "label": "L2 + 3×addOverride",
+      "sublabel": "版本化/aws:kms/PAB",
+      "pos": [
+        620,
+        270
+      ],
+      "size": [
+        180,
+        58
+      ],
+      "tag": "4 属性"
+    },
+    {
+      "id": "l3",
+      "type": "backend",
+      "label": "L3 cloudtrail.Trail",
+      "sublabel": "1 声明 → 3 资源",
+      "pos": [
+        620,
+        370
+      ],
+      "size": [
+        180,
+        58
+      ],
+      "tag": "仅 synth 对比"
+    },
+    {
+      "id": "cfn",
+      "type": "cloud",
+      "label": "LocalStack CFN",
+      "sublabel": "deploy 三栈 / destroy",
+      "pos": [
+        880,
+        240
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "s3l1",
+      "type": "database",
+      "label": "ho01-l1-raw",
+      "sublabel": "无加密无版本化",
+      "pos": [
+        1120,
+        120
+      ],
+      "size": [
+        170,
+        54
+      ]
+    },
+    {
+      "id": "s3l2",
+      "type": "database",
+      "label": "ho01-l2-data",
+      "sublabel": "线上 AES256",
+      "pos": [
+        1120,
+        230
+      ],
+      "size": [
+        170,
+        54
+      ]
+    },
+    {
+      "id": "s3l2x",
+      "type": "database",
+      "label": "ho01-l2x-data",
+      "sublabel": "Enabled + aws:kms",
+      "pos": [
+        1120,
+        340
+      ],
+      "size": [
+        170,
+        54
+      ],
+      "tag": "PAB 归一化坑"
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "LocalStack :4566（无 bootstrap，禁资产）",
+      "wraps": [
+        "cfn",
+        "s3l1",
+        "s3l2",
+        "s3l2x"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "s1",
+      "from": "app",
+      "to": "synth",
+      "variant": "emphasis"
+    },
+    {
+      "id": "s2",
+      "from": "synth",
+      "to": "l1"
+    },
+    {
+      "id": "s3",
+      "from": "synth",
+      "to": "l2"
+    },
+    {
+      "id": "s4",
+      "from": "synth",
+      "to": "l2x"
+    },
+    {
+      "id": "s5",
+      "from": "synth",
+      "to": "l3"
+    },
+    {
+      "id": "d1",
+      "from": "l1",
+      "to": "cfn"
+    },
+    {
+      "id": "d2",
+      "from": "l2",
+      "to": "cfn"
+    },
+    {
+      "id": "d3",
+      "from": "l2x",
+      "to": "cfn"
+    },
+    {
+      "id": "r1",
+      "from": "cfn",
+      "to": "s3l1"
+    },
+    {
+      "id": "r2",
+      "from": "cfn",
+      "to": "s3l2"
+    },
+    {
+      "id": "r3",
+      "from": "cfn",
+      "to": "s3l2x"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "三层阶梯",
+      "items": [
+        "L1 写什么是什么",
+        "L2 注入安全默认值",
+        "L3 一个声明一组资源"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "实测",
+      "items": [
+        "11 条线上断言全绿",
+        "版本化/aws:kms 生效",
+        "PAB 被引擎归一化"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "坑",
+      "items": [
+        "override 瞄准 CFN 规范名",
+        "auto_delete 需 bootstrap",
+        "jsii+typeguard 拦 BucketDeployment"
+      ]
+    }
+  ]
+}

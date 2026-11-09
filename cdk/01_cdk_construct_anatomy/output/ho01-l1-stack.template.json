@@ -1,0 +1,27 @@
+{
+ "Resources": {
+  "RawBucket": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketName": "ho01-l1-raw"
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho01-l1-stack/RawBucket"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/zPSMzKz0DNQTCwv1k1OydbNyUzSqw4uSUzO1kksL44vNtZzTstzKk3OTi3RcU7L8y8tKSgtqdUJqCzJyM/TN9YzNNazVMwqzszULSrNK8nMTdULgtAANauKVFkAAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "ho01-l1-stack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "L1Bucket": {
+   "Value": "ho01-l1-raw"
+  }
+ }
+}
